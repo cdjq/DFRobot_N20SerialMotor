@@ -18,9 +18,7 @@ stop            KEYWORD2
 getSpeed        KEYWORD2
 getMotorState   KEYWORD2
 setDeviceAddr   KEYWORD2
-getDeviceAddr   KEYWORD2
 setBaudrate     KEYWORD2
-restoreFactory  KEYWORD2
 getDeviceInfo   KEYWORD2
 scan            KEYWORD2
 
@@ -36,15 +34,6 @@ eBaud19200   LITERAL1
 eBaud38400   LITERAL1
 eBaud57600   LITERAL1
 eBaud115200  LITERAL1
-
-eParityNone  LITERAL1
-eParityEven  LITERAL1
-eParityOdd   LITERAL1
-
-eStopBit0_5  LITERAL1
-eStopBit1    LITERAL1
-eStopBit1_5  LITERAL1
-eStopBit2    LITERAL1
 
 eMotorStop     LITERAL1
 eMotorForward  LITERAL1

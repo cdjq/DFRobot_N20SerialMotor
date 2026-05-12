@@ -95,9 +95,9 @@ pip3 install pyserial
       @return bool 成功返回 True。
     '''
 
-  def set_baudrate(self, baud_code, stop_bit=STOP_BIT_1, parity=PARITY_NONE):
+  def set_baudrate(self, baud_code):
     '''!
-      @brief 配置波特率和串口参数。
+      @brief 配置波特率。
       @param baud_code 波特率代码。
       @n     BAUD_2400
       @n     BAUD_4800
@@ -107,21 +107,6 @@ pip3 install pyserial
       @n     BAUD_38400
       @n     BAUD_57600
       @n     BAUD_115200
-      @param stop_bit 停止位代码。
-      @n     STOP_BIT_0_5
-      @n     STOP_BIT_1
-      @n     STOP_BIT_1_5
-      @n     STOP_BIT_2
-      @param parity 校验位代码。
-      @n     PARITY_NONE
-      @n     PARITY_EVEN
-      @n     PARITY_ODD
-      @return bool 成功返回 True。
-    '''
-
-  def restore_factory(self):
-    '''!
-      @brief 恢复出厂设置。
       @return bool 成功返回 True。
     '''
 

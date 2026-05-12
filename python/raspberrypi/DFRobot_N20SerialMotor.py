@@ -23,11 +23,9 @@ class DFRobot_N20SerialMotor:
   REG_PID = 0x0001
   REG_ADDR = 0x0002
   REG_BAUD = 0x0003
-  REG_VS = 0x0004
   REG_VERSION = 0x0005
   REG_STATE = 0x0006
   REG_SPEED = 0x0007
-  REG_RESET = 0x0008
 
   VID = 0x3343
   PID = 0x02C1
@@ -40,15 +38,6 @@ class DFRobot_N20SerialMotor:
   BAUD_38400 = 0x0006
   BAUD_57600 = 0x0007
   BAUD_115200 = 0x0008
-
-  PARITY_NONE = 0x00
-  PARITY_EVEN = 0x01
-  PARITY_ODD = 0x02
-
-  STOP_BIT_0_5 = 0x00
-  STOP_BIT_1 = 0x01
-  STOP_BIT_1_5 = 0x02
-  STOP_BIT_2 = 0x03
 
   STATE_STOP = 0
   STATE_FORWARD = 1
@@ -137,26 +126,13 @@ class DFRobot_N20SerialMotor:
       time.sleep(0.05)
     return ok
 
-  def set_baudrate(self, baud_code, stop_bit=STOP_BIT_1, parity=PARITY_NONE):
+  def set_baudrate(self, baud_code):
     '''!
-      @brief Configure baudrate and UART format.
+      @brief Configure baudrate.
       @return bool True on success.
     '''
-    verify_stop = ((parity & 0xFF) << 8) | (stop_bit & 0xFF)
     ok = self._write_reg(self._slave_addr, self.REG_BAUD, baud_code)
-    ok = ok and self._write_reg(self._slave_addr, self.REG_VS, verify_stop)
     if ok:
-      time.sleep(0.1)
-    return ok
-
-  def restore_factory(self):
-    '''!
-      @brief Restore factory settings.
-      @return bool True on success.
-    '''
-    ok = self._write_reg(self._slave_addr, self.REG_RESET, 1)
-    if ok:
-      self._slave_addr = 1
       time.sleep(0.1)
     return ok
 

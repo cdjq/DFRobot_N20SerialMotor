@@ -105,39 +105,12 @@ int8_t DFRobot_N20SerialMotor::setDeviceAddr(uint8_t addr)
   return 0;
 }
 
-uint8_t DFRobot_N20SerialMotor::getDeviceAddr(void)
+int8_t DFRobot_N20SerialMotor::setBaudrate(eBaudrate_t baud)
 {
-  uint8_t recvBuf[2] = { 0 };
-  uint16_t value = 0;
-
-  if (readHoldingReg(_addr, N20SERIAL_HOLDINGREG_ADDR, recvBuf, 2) == 0xFF) {
-    return _addr;
-  }
-  value = ((uint16_t)recvBuf[0] << 8) | recvBuf[1];
-  return (uint8_t)value;
-}
-
-int8_t DFRobot_N20SerialMotor::setBaudrate(eBaudrate_t baud, eStopBit_t stopBits, eParity_t parity)
-{
-  uint16_t verifyAndStop = (((uint16_t)parity & 0x00FF) << 8) | ((uint16_t)stopBits & 0x00FF);
-
   if (writeHoldingReg16(_addr, N20SERIAL_HOLDINGREG_BAUDRATE, (uint16_t)baud) != 0) {
     return -1;
   }
-  if (writeHoldingReg16(_addr, N20SERIAL_HOLDINGREG_VS, verifyAndStop) != 0) {
-    return -1;
-  }
   delay(100);
-  return 0;
-}
-
-int8_t DFRobot_N20SerialMotor::restoreFactory(void)
-{
-  if (writeHoldingReg16(_addr, N20SERIAL_HOLDINGREG_RESET, 0x0001) != 0) {
-    return -1;
-  }
-  delay(100);
-  _addr = N20SERIAL_ADDR_MIN;
   return 0;
 }
 

@@ -95,9 +95,9 @@ Copy `DFRobot_N20SerialMotor.py` and example folder to your Raspberry Pi project
       @return bool True on success.
     '''
 
-  def set_baudrate(self, baud_code, stop_bit=STOP_BIT_1, parity=PARITY_NONE):
+  def set_baudrate(self, baud_code):
     '''!
-      @brief Configure baudrate and UART format.
+      @brief Configure baudrate.
       @param baud_code Baudrate code.
       @n     BAUD_2400
       @n     BAUD_4800
@@ -107,21 +107,6 @@ Copy `DFRobot_N20SerialMotor.py` and example folder to your Raspberry Pi project
       @n     BAUD_38400
       @n     BAUD_57600
       @n     BAUD_115200
-      @param stop_bit Stop bit code.
-      @n     STOP_BIT_0_5
-      @n     STOP_BIT_1
-      @n     STOP_BIT_1_5
-      @n     STOP_BIT_2
-      @param parity Parity code.
-      @n     PARITY_NONE
-      @n     PARITY_EVEN
-      @n     PARITY_ODD
-      @return bool True on success.
-    '''
-
-  def restore_factory(self):
-    '''!
-      @brief Restore factory settings.
       @return bool True on success.
     '''
 

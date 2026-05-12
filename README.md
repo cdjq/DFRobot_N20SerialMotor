@@ -107,15 +107,8 @@ Copy both folders into `Arduino/libraries`, then open examples and run.
   int8_t setDeviceAddr(uint8_t addr);
 
   /**
-   * @fn getDeviceAddr
-   * @brief Read current module address.
-   * @return uint8_t Device address.
-   */
-  uint8_t getDeviceAddr(void);
-
-  /**
    * @fn setBaudrate
-   * @brief Configure baudrate/parity/stop bits.
+   * @brief Configure baudrate.
    * @param baud Baudrate code.
    * @n     eBaud2400
    * @n     eBaud4800
@@ -125,29 +118,11 @@ Copy both folders into `Arduino/libraries`, then open examples and run.
    * @n     eBaud38400
    * @n     eBaud57600
    * @n     eBaud115200
-   * @param stopBits Stop bit code.
-   * @n     eStopBit0_5
-   * @n     eStopBit1
-   * @n     eStopBit1_5
-   * @n     eStopBit2
-   * @param parity Parity code.
-   * @n     eParityNone
-   * @n     eParityEven
-   * @n     eParityOdd
    * @return int8_t
    * @retval 0 success
    * @retval -1 failed
    */
-  int8_t setBaudrate(eBaudrate_t baud, eStopBit_t stopBits = eStopBit1, eParity_t parity = eParityNone);
-
-  /**
-   * @fn restoreFactory
-   * @brief Restore factory configuration by writing RESET register.
-   * @return int8_t
-   * @retval 0 success
-   * @retval -1 failed
-   */
-  int8_t restoreFactory(void);
+  int8_t setBaudrate(eBaudrate_t baud);
 
   /**
    * @fn getDeviceInfo
