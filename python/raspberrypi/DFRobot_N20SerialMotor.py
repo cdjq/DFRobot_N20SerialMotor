@@ -10,8 +10,10 @@
 '''
 
 import serial
-import struct
 import time
+
+import modbus_tk.defines as cst
+from modbus_tk import modbus_rtu
 
 
 class DFRobot_N20SerialMotor:
@@ -46,7 +48,7 @@ class DFRobot_N20SerialMotor:
   def __init__(self, port, slave_addr=1, baudrate=9600, timeout=0.2):
     '''!
       @brief Constructor.
-      @param port Serial port name, e.g. "/dev/ttyUSB0".
+      @param port Serial port name, e.g. "/dev/ttyAMA0".
       @param slave_addr Modbus slave address.
       @param baudrate Host serial baudrate.
       @param timeout Serial timeout in seconds.
@@ -56,13 +58,17 @@ class DFRobot_N20SerialMotor:
     self._baudrate = baudrate
     self._timeout = timeout
     self._ser = None
+    self.master = None
 
   def begin(self):
     '''!
       @brief Open serial port and check target device.
       @return bool True if device is reachable.
     '''
-    self._ser = serial.Serial(self._port, self._baudrate, timeout=self._timeout)
+    self._ser = serial.Serial(port=self._port, baudrate=self._baudrate, bytesize=8, parity='N', stopbits=1)
+    self.master = modbus_rtu.RtuMaster(self._ser)
+    self.master.set_timeout(self._timeout)
+    time.sleep(0.5)
     try:
       return self._is_supported_vid(self._read_reg(self._slave_addr, self.REG_VID))
     except Exception:
@@ -72,8 +78,12 @@ class DFRobot_N20SerialMotor:
     '''!
       @brief Close serial port.
     '''
+    if self.master is not None:
+      self.master.close()
+      self.master = None
     if self._ser is not None and self._ser.is_open:
       self._ser.close()
+      self._ser = None
 
   def set_speed(self, speed):
     '''!
@@ -169,43 +179,20 @@ class DFRobot_N20SerialMotor:
     return vid == self.VID or vid == 0x4333
 
   def _read_reg(self, addr, reg):
-    frame = struct.pack(">BBHH", addr, 0x03, reg, 0x0001)
-    frame += self._crc16(frame)
-    self._ser.reset_input_buffer()
-    self._ser.write(frame)
-    resp = self._ser.read(7)
-
-    if len(resp) != 7:
-      raise RuntimeError("Read timeout")
-    if resp[0] != addr or resp[1] != 0x03 or resp[2] != 0x02:
-      raise RuntimeError("Invalid response")
-    if self._crc16(resp[:-2]) != resp[-2:]:
-      raise RuntimeError("CRC error")
-
-    return (resp[3] << 8) | resp[4]
+    '''!
+      @brief Read one register by Modbus RTU.
+    '''
+    try:
+      return list(self.master.execute(addr, cst.READ_HOLDING_REGISTERS, reg, 1))[0]
+    except Exception:
+      return list(self.master.execute(addr, cst.READ_INPUT_REGISTERS, reg, 1))[0]
 
   def _write_reg(self, addr, reg, value):
-    frame = struct.pack(">BBHH", addr, 0x06, reg, value & 0xFFFF)
-    frame += self._crc16(frame)
-    self._ser.reset_input_buffer()
-    self._ser.write(frame)
-    resp = self._ser.read(8)
-
-    if len(resp) != 8:
+    '''!
+      @brief Write one holding register by Modbus RTU.
+    '''
+    try:
+      self.master.execute(addr, cst.WRITE_SINGLE_REGISTER, reg, output_value=value & 0xFFFF)
+      return True
+    except Exception:
       return False
-    if self._crc16(resp[:-2]) != resp[-2:]:
-      return False
-
-    return resp[:6] == frame[:6]
-
-  @staticmethod
-  def _crc16(data):
-    crc = 0xFFFF
-    for byte in data:
-      crc ^= byte
-      for _ in range(8):
-        if crc & 0x0001:
-          crc = (crc >> 1) ^ 0xA001
-        else:
-          crc >>= 1
-    return struct.pack("<H", crc)

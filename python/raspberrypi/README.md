@@ -31,7 +31,7 @@ DFRobot_N20SerialMotor Python is a Raspberry Pi Modbus-RTU driver for DFR1277 se
 Install dependency:
 
 ```bash
-pip3 install pyserial
+pip3 install modbus_tk
 ```
 
 Copy `DFRobot_N20SerialMotor.py` and example folder to your Raspberry Pi project.
@@ -43,7 +43,7 @@ Copy `DFRobot_N20SerialMotor.py` and example folder to your Raspberry Pi project
   def __init__(self, port, slave_addr=1, baudrate=9600, timeout=0.2):
     '''!
       @brief Constructor.
-      @param port Serial port name, e.g. "/dev/ttyUSB0".
+      @param port Serial port name, e.g. "/dev/ttyAMA0".
       @param slave_addr Modbus slave address.
       @param baudrate Host serial baudrate.
       @param timeout Serial timeout in seconds.
@@ -124,12 +124,6 @@ Copy `DFRobot_N20SerialMotor.py` and example folder to your Raspberry Pi project
       @return list Detected address list.
     '''
 ```
-
-## Examples
-
-* [single_motor_control](./examples/single_motor_control/single_motor_control.py)
-* [dual_motor_control](./examples/dual_motor_control/dual_motor_control.py)
-* [modify_slave_address](./examples/modify_slave_address/modify_slave_address.py)
 
 ## History
 

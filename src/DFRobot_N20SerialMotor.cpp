@@ -15,10 +15,47 @@ DFRobot_N20SerialMotor::DFRobot_N20SerialMotor(uint8_t addr, Stream *s) : DFRobo
 {
   _s = s;
   _addr = addr;
+  _baud = 0;
+  _autoBegin = false;
+  _serial = NULL;
+#if !defined(ESP8266) && !defined(ARDUINO_AVR_UNO)
+  _rxpin = 0;
+  _txpin = 0;
+#endif
 }
+
+#if defined(ESP8266) || defined(ARDUINO_AVR_UNO)
+DFRobot_N20SerialMotor::DFRobot_N20SerialMotor(uint8_t addr, SoftwareSerial *sSerial, uint32_t baud) : DFRobot_RTU(sSerial)
+{
+  _s = sSerial;
+  _addr = addr;
+  _serial = sSerial;
+  _baud = baud;
+  _autoBegin = true;
+}
+#else
+DFRobot_N20SerialMotor::DFRobot_N20SerialMotor(uint8_t addr, HardwareSerial *hSerial, uint32_t baud, uint8_t rxpin, uint8_t txpin) : DFRobot_RTU(hSerial)
+{
+  _s = hSerial;
+  _addr = addr;
+  _serial = hSerial;
+  _baud = baud;
+  _rxpin = rxpin;
+  _txpin = txpin;
+  _autoBegin = true;
+}
+#endif
 
 int8_t DFRobot_N20SerialMotor::begin(void)
 {
+  if (_autoBegin && _serial != NULL) {
+#if defined(ESP32)
+    _serial->begin(_baud, SERIAL_8N1, _rxpin, _txpin);
+#else
+    _serial->begin(_baud);
+#endif
+  }
+
   setTimeoutTimeMs(200);
   if (_addr < N20SERIAL_ADDR_MIN || _addr > N20SERIAL_ADDR_MAX) {
     return -1;

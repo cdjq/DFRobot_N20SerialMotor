@@ -12,18 +12,32 @@
 
 #include "DFRobot_N20SerialMotor.h"
 
-#if defined(ARDUINO_AVR_UNO) || defined(ESP8266)
-#include "SoftwareSerial.h"
-SoftwareSerial n20Serial(2, 3);  // RX, TX
-#define N20_PORT n20Serial
-#else
-#define N20_PORT Serial1
-#endif
+/* ---------------------------------------------------------------------------------------------------------------------
+  *    board   |             MCU                | Leonardo/Mega2560/M0 |    UNO    | ESP8266 | ESP32 |  microbit  |   m0  |
+  *     VCC    |              5V                |         5V           |     5V    |    5V   |   5V  |     X      |   5V  |
+  *     GND    |              GND               |        GND           |    GND    |   GND   |  GND  |     X      |  GND  |
+  *     RX     |              TX                |     Serial1 TX1      |     5     |   5/D6  | 25/D2 |     X      |  tx1  |
+  *     TX     |              RX                |     Serial1 RX1      |     4     |   4/D7  | 26/D3 |     X      |  rx1  |
+  * ----------------------------------------------------------------------------------------------------------------------*/
+/* Baud rate can be changed */
 
+#if defined(ESP8266) || defined(ARDUINO_AVR_UNO)
+SoftwareSerial n20Serial(4, 5);
 DFRobot_N20SerialMotor motors[] = {
-  DFRobot_N20SerialMotor(1, &N20_PORT),
-  DFRobot_N20SerialMotor(2, &N20_PORT)
+  DFRobot_N20SerialMotor(1, &n20Serial, 9600),
+  DFRobot_N20SerialMotor(2, &n20Serial, 9600)
 };
+#elif defined(ESP32)
+DFRobot_N20SerialMotor motors[] = {
+  DFRobot_N20SerialMotor(1, &Serial1, 9600, /*D2*/ D2, /*D3*/ D3),
+  DFRobot_N20SerialMotor(2, &Serial1, 9600, /*D2*/ D2, /*D3*/ D3)
+};
+#else
+DFRobot_N20SerialMotor motors[] = {
+  DFRobot_N20SerialMotor(1, &Serial1, 9600),
+  DFRobot_N20SerialMotor(2, &Serial1, 9600)
+};
+#endif
 const uint8_t MOTOR_COUNT = sizeof(motors) / sizeof(motors[0]);
 
 void setup()
@@ -33,7 +47,6 @@ void setup()
   uint8_t count = 0;
 
   Serial.begin(115200);
-  N20_PORT.begin(9600);
 
   for (i = 0; i < MOTOR_COUNT; i++) {
     while (motors[i].begin() != 0) {

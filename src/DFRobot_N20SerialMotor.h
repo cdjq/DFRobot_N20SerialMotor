@@ -15,6 +15,12 @@
 #include "Arduino.h"
 #include "DFRobot_RTU.h"
 
+#if defined(ESP8266) || defined(ARDUINO_AVR_UNO)
+#include <SoftwareSerial.h>
+#else
+#include <HardwareSerial.h>
+#endif
+
 #define N20SERIAL_BROADCAST_ADDR      0x00
 #define N20SERIAL_DEVICE_VID          0x3343
 #define N20SERIAL_DEVICE_PID          0x02C1
@@ -75,6 +81,28 @@ public:
    * @param s Stream pointer used for Modbus-RTU communication.
    */
   DFRobot_N20SerialMotor(uint8_t addr, Stream *s);
+
+#if defined(ESP8266) || defined(ARDUINO_AVR_UNO)
+  /**
+   * @fn DFRobot_N20SerialMotor
+   * @brief Constructor.
+   * @param addr Modbus slave address.
+   * @param sSerial Software serial port used for Modbus-RTU communication.
+   * @param baud Serial communication baudrate.
+   */
+  DFRobot_N20SerialMotor(uint8_t addr, SoftwareSerial *sSerial, uint32_t baud);
+#else
+  /**
+   * @fn DFRobot_N20SerialMotor
+   * @brief Constructor.
+   * @param addr Modbus slave address.
+   * @param hSerial Hardware serial port used for Modbus-RTU communication.
+   * @param baud Serial communication baudrate.
+   * @param rxpin RX pin, used by ESP32.
+   * @param txpin TX pin, used by ESP32.
+   */
+  DFRobot_N20SerialMotor(uint8_t addr, HardwareSerial *hSerial, uint32_t baud, uint8_t rxpin = 0, uint8_t txpin = 0);
+#endif
 
   /**
    * @fn begin
@@ -180,6 +208,15 @@ protected:
 
   Stream *_s;
   uint8_t _addr;
+  uint32_t _baud;
+  bool _autoBegin;
+#if defined(ESP8266) || defined(ARDUINO_AVR_UNO)
+  SoftwareSerial *_serial;
+#else
+  HardwareSerial *_serial;
+  uint8_t _rxpin;
+  uint8_t _txpin;
+#endif
 };
 
 #endif

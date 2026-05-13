@@ -12,12 +12,17 @@
 
 #include "DFRobot_N20SerialMotor.h"
 
-#if defined(ARDUINO_AVR_UNO) || defined(ESP8266)
-#include "SoftwareSerial.h"
-SoftwareSerial n20Serial(2, 3);  // RX, TX
-#define N20_PORT n20Serial
-#else
-#define N20_PORT Serial1
+/* ---------------------------------------------------------------------------------------------------------------------
+  *    board   |             MCU                | Leonardo/Mega2560/M0 |    UNO    | ESP8266 | ESP32 |  microbit  |   m0  |
+  *     VCC    |              5V                |         5V           |     5V    |    5V   |   5V  |     X      |   5V  |
+  *     GND    |              GND               |        GND           |    GND    |   GND   |  GND  |     X      |  GND  |
+  *     RX     |              TX                |     Serial1 TX1      |     5     |   5/D6  | 25/D2 |     X      |  tx1  |
+  *     TX     |              RX                |     Serial1 RX1      |     4     |   4/D7  | 26/D3 |     X      |  rx1  |
+  * ----------------------------------------------------------------------------------------------------------------------*/
+/* Baud rate can be changed */
+
+#if defined(ESP8266) || defined(ARDUINO_AVR_UNO)
+SoftwareSerial n20Serial(4, 5);  // RX, TX
 #endif
 
 // Current module configuration (before running this sketch).
@@ -27,12 +32,17 @@ const unsigned long CURRENT_HOST_BAUD = 9600;
 // Target module configuration.
 const uint8_t TARGET_ADDR = 2;
 
-DFRobot_N20SerialMotor motorCurrent(CURRENT_ADDR, &N20_PORT);
+#if defined(ESP8266) || defined(ARDUINO_AVR_UNO)
+DFRobot_N20SerialMotor motorCurrent(CURRENT_ADDR, &n20Serial, CURRENT_HOST_BAUD);
+#elif defined(ESP32)
+DFRobot_N20SerialMotor motorCurrent(CURRENT_ADDR, &Serial1, CURRENT_HOST_BAUD, /*D2*/ D2, /*D3*/ D3);
+#else
+DFRobot_N20SerialMotor motorCurrent(CURRENT_ADDR, &Serial1, CURRENT_HOST_BAUD);
+#endif
 
 void setup()
 {
   Serial.begin(115200);
-  N20_PORT.begin(CURRENT_HOST_BAUD);
 
   Serial.println("Step1: Init with current address...");
   while (motorCurrent.begin() != 0) {

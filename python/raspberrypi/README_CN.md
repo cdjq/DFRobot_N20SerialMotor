@@ -31,7 +31,7 @@ DFRobot_N20SerialMotor Python 是用于树莓派平台的 DFR1277 串口 N20 电
 安装依赖：
 
 ```bash
-pip3 install pyserial
+pip3 install modbus_tk
 ```
 
 将 `DFRobot_N20SerialMotor.py` 和示例目录拷贝到树莓派项目中即可使用。
@@ -43,7 +43,7 @@ pip3 install pyserial
   def __init__(self, port, slave_addr=1, baudrate=9600, timeout=0.2):
     '''!
       @brief 构造函数。
-      @param port 串口名称，如 "/dev/ttyUSB0"。
+      @param port 串口名称，如 "/dev/ttyAMA0"。
       @param slave_addr Modbus 从机地址。
       @param baudrate 主机串口波特率。
       @param timeout 串口超时时间（秒）。
@@ -124,12 +124,6 @@ pip3 install pyserial
       @return list 检测到的地址列表。
     '''
 ```
-
-## 示例
-
-* [single_motor_control](./examples/single_motor_control/single_motor_control.py)
-* [dual_motor_control](./examples/dual_motor_control/dual_motor_control.py)
-* [modify_slave_address](./examples/modify_slave_address/modify_slave_address.py)
 
 ## 历史
 

@@ -146,12 +146,6 @@ Copy both folders into `Arduino/libraries`, then open examples and run.
   uint8_t scan(uint8_t *addrBuf, uint8_t bufLen, uint8_t startAddr = 1, uint8_t endAddr = 32);
 ```
 
-## Examples
-
-* [singleMotorControl](./examples/singleMotorControl/singleMotorControl.ino)
-* [dualMotorControl](./examples/dualMotorControl/dualMotorControl.ino)
-* [modify_slave_address](./examples/modify_slave_address/modify_slave_address.ino)
-
 ## Compatibility
 
 MCU                | Work Well    |   Work Wrong    | Untested    | Remarks
