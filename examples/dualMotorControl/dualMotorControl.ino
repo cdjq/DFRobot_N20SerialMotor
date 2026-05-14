@@ -38,7 +38,7 @@ DFRobot_N20SerialMotor motors[] = {
   DFRobot_N20SerialMotor(2, &Serial1, 9600)
 };
 #endif
-const uint8_t MOTOR_COUNT = sizeof(motors) / sizeof(motors[0]);
+const uint8_t motorCount = sizeof(motors) / sizeof(motors[0]);
 
 void setup()
 {
@@ -48,7 +48,7 @@ void setup()
 
   Serial.begin(115200);
 
-  for (i = 0; i < MOTOR_COUNT; i++) {
+  for (i = 0; i < motorCount; i++) {
     while (motors[i].begin() != 0) {
       Serial.print("Motor init failed, index: ");
       Serial.println(i);

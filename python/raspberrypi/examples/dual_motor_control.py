@@ -18,13 +18,13 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from DFRobot_N20SerialMotor import DFRobot_N20SerialMotor
 
 
-PORT = "/dev/ttyAMA0"
+port = "/dev/ttyAMA0"
 
 
 def main():
   motors = [
-    DFRobot_N20SerialMotor(PORT, slave_addr=1, baudrate=9600),
-    DFRobot_N20SerialMotor(PORT, slave_addr=2, baudrate=9600)
+    DFRobot_N20SerialMotor(port, slave_addr=1, baudrate=9600),
+    DFRobot_N20SerialMotor(port, slave_addr=2, baudrate=9600)
   ]
 
   for i, motor in enumerate(motors):

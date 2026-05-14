@@ -18,11 +18,11 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from DFRobot_N20SerialMotor import DFRobot_N20SerialMotor
 
 
-PORT = "/dev/ttyAMA0"
+port = "/dev/ttyAMA0"
 
 
 def main():
-  motor = DFRobot_N20SerialMotor(PORT, slave_addr=1, baudrate=9600)
+  motor = DFRobot_N20SerialMotor(port, slave_addr=1, baudrate=9600)
 
   if not motor.begin():
     print("Init failed, check wiring/address/baudrate.")
