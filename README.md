@@ -79,24 +79,6 @@ Copy both folders into `Arduino/libraries`, then open examples and run.
   int8_t stop(void);
 
   /**
-   * @fn getSpeed
-   * @brief Read motor speed register.
-   * @return int16_t Current speed, returns 0 if read failed.
-   */
-  int16_t getSpeed(void);
-
-  /**
-   * @fn getMotorState
-   * @brief Read motor state register.
-   * @return eMotorState_t
-   * @n     eMotorStop    Motor stopped
-   * @n     eMotorForward Motor running forward
-   * @n     eMotorReverse Motor running backward
-   * @n     eMotorUnknown Read failed
-   */
-  eMotorState_t getMotorState(void);
-
-  /**
    * @fn setDeviceAddr
    * @brief Set module device address.
    * @param addr Address range: 1~32.

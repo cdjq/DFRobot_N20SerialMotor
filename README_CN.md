@@ -79,24 +79,6 @@ DFRobot_N20SerialMotor 是 DFR1277 串口 N20 电机驱动模块的 Arduino 库�
   int8_t stop(void);
 
   /**
-   * @fn getSpeed
-   * @brief 读取电机速度寄存器。
-   * @return int16_t 当前速度，读取失败返回 0。
-   */
-  int16_t getSpeed(void);
-
-  /**
-   * @fn getMotorState
-   * @brief 读取电机状态寄存器。
-   * @return eMotorState_t
-   * @n     eMotorStop    电机停止
-   * @n     eMotorForward 电机正转
-   * @n     eMotorReverse 电机反转
-   * @n     eMotorUnknown 读取失败
-   */
-  eMotorState_t getMotorState(void);
-
-  /**
    * @fn setDeviceAddr
    * @brief 设置模块设备地址。
    * @param addr 地址范围：1~32。

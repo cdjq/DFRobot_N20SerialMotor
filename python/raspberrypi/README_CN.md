@@ -73,21 +73,6 @@ pip3 install modbus_tk
       @return bool 成功返回 True。
     '''
 
-  def get_speed(self):
-    '''!
-      @brief 读取速度寄存器。
-      @return int 速度值 -255~255。
-    '''
-
-  def get_motor_state(self):
-    '''!
-      @brief 读取电机状态寄存器。
-      @return int
-      @n     STATE_STOP    0，电机停止
-      @n     STATE_FORWARD 1，电机正转
-      @n     STATE_REVERSE 2，电机反转
-    '''
-
   def set_device_addr(self, addr):
     '''!
       @brief 设置模块设备地址。

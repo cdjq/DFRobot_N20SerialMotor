@@ -105,23 +105,6 @@ class DFRobot_N20SerialMotor:
     '''
     return self.set_speed(0)
 
-  def get_speed(self):
-    '''!
-      @brief Read speed register.
-      @return int Speed value.
-    '''
-    value = self._read_reg(self._slave_addr, self.REG_SPEED)
-    if value & 0x8000:
-      return value - 0x10000
-    return value
-
-  def get_motor_state(self):
-    '''!
-      @brief Read motor state register.
-      @return int STATE_STOP/STATE_FORWARD/STATE_REVERSE.
-    '''
-    return self._read_reg(self._slave_addr, self.REG_STATE)
-
   def set_device_addr(self, addr):
     '''!
       @brief Set module address.

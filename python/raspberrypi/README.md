@@ -73,21 +73,6 @@ Copy `DFRobot_N20SerialMotor.py` and example folder to your Raspberry Pi project
       @return bool True on success.
     '''
 
-  def get_speed(self):
-    '''!
-      @brief Read speed register.
-      @return int Speed value -255~255.
-    '''
-
-  def get_motor_state(self):
-    '''!
-      @brief Read motor state register.
-      @return int
-      @n     STATE_STOP    0, motor stopped
-      @n     STATE_FORWARD 1, motor running forward
-      @n     STATE_REVERSE 2, motor running backward
-    '''
-
   def set_device_addr(self, addr):
     '''!
       @brief Set module device address.

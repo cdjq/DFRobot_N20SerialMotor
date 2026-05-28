@@ -99,36 +99,6 @@ int8_t DFRobot_N20SerialMotor::stop(void)
   return setSpeed(0);
 }
 
-int16_t DFRobot_N20SerialMotor::getSpeed(void)
-{
-  uint8_t recvBuf[2] = { 0 };
-  uint16_t value = 0;
-
-  if (readHoldingReg(_addr, N20SERIAL_HOLDINGREG_SPEED, recvBuf, 2) == 0xFF) {
-    return 0;
-  }
-  value = ((uint16_t)recvBuf[0] << 8) | recvBuf[1];
-  return (int16_t)value;
-}
-
-eMotorState_t DFRobot_N20SerialMotor::getMotorState(void)
-{
-  uint16_t value = 0;
-  if (!readReg16Compat(_addr, N20SERIAL_INPUTREG_STATE, value)) {
-    return eMotorUnknown;
-  }
-  if (value == (uint16_t)eMotorStop) {
-    return eMotorStop;
-  }
-  if (value == (uint16_t)eMotorForward) {
-    return eMotorForward;
-  }
-  if (value == (uint16_t)eMotorReverse) {
-    return eMotorReverse;
-  }
-  return eMotorUnknown;
-}
-
 int8_t DFRobot_N20SerialMotor::setDeviceAddr(uint8_t addr)
 {
   if (addr < N20SERIAL_ADDR_MIN || addr > N20SERIAL_ADDR_MAX) {
@@ -202,13 +172,7 @@ bool DFRobot_N20SerialMotor::readReg16Compat(uint8_t devAddr, uint16_t reg, uint
   uint8_t recvBuf[2] = { 0 };
   value = 0;
 
-  // This module is commonly read by function code 0x03 in official examples.
-  // Try holding register first, then fallback to input register.
-  if (readHoldingReg(devAddr, reg, recvBuf, 2) != 0xFF) {
-    value = ((uint16_t)recvBuf[0] << 8) | recvBuf[1];
-    return true;
-  }
-  if (readInputReg(devAddr, reg, recvBuf, 2) != 0xFF) {
+  if (readInputReg(devAddr, reg, recvBuf, 2) == 0) {
     value = ((uint16_t)recvBuf[0] << 8) | recvBuf[1];
     return true;
   }

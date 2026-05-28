@@ -15,8 +15,6 @@ DFRobot_N20SerialMotor  KEYWORD1
 begin           KEYWORD2
 setSpeed        KEYWORD2
 stop            KEYWORD2
-getSpeed        KEYWORD2
-getMotorState   KEYWORD2
 setDeviceAddr   KEYWORD2
 setBaudrate     KEYWORD2
 getDeviceInfo   KEYWORD2
