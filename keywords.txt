@@ -17,6 +17,7 @@ setSpeed        KEYWORD2
 stop            KEYWORD2
 setDeviceAddr   KEYWORD2
 setBaudrate     KEYWORD2
+restoreFactory   KEYWORD2
 getDeviceInfo   KEYWORD2
 scan            KEYWORD2
 

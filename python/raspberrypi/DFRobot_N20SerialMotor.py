@@ -28,9 +28,11 @@ class DFRobot_N20SerialMotor:
   REG_VERSION = 0x0005
   REG_STATE = 0x0006
   REG_SPEED = 0x0007
+  REG_RESET = 0x0008
 
   VID = 0x3343
-  PID = 0x02C1
+  PID = 0x04FD
+  FACTORY_RESET_VALUE = 0x0001
 
   BAUD_2400 = 0x0001
   BAUD_4800 = 0x0002
@@ -125,6 +127,16 @@ class DFRobot_N20SerialMotor:
       @return bool True on success.
     '''
     ok = self._write_reg(self._slave_addr, self.REG_BAUD, baud_code)
+    if ok:
+      time.sleep(0.1)
+    return ok
+
+  def restoreFactory(self):
+    '''!
+      @brief Restore factory settings stored in the module.
+      @return bool True on success. Factory settings take effect after power-on again.
+    '''
+    ok = self._write_reg(self._slave_addr, self.REG_RESET, self.FACTORY_RESET_VALUE)
     if ok:
       time.sleep(0.1)
     return ok

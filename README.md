@@ -26,7 +26,8 @@ DFRobot_N20SerialMotor is an Arduino library for DFR1277 Modbus-RTU serial N20 m
 * Initialize module and verify communication by Modbus-RTU<br/>
 * Set motor speed (`-255~255`) and stop quickly<br/>
 * Configure slave address (`1~32`)<br/>
-* Configure baudrate/parity/stop bits<br/>
+* Configure baudrate<br/>
+* Restore factory settings; defaults take effect after power-on again<br/>
 * Read VID/PID/version and scan cascaded devices
 
 ## Installation
@@ -105,6 +106,16 @@ Copy both folders into `Arduino/libraries`, then open examples and run.
    * @retval -1 failed
    */
   int8_t setBaudrate(eBaudrate_t baud);
+
+  /**
+   * @fn restoreFactory
+   * @brief Restore factory settings stored in the module.
+   * @n     Factory settings take effect after the module is powered on again.
+   * @return int8_t
+   * @retval 0 success
+   * @retval -1 failed
+   */
+  int8_t restoreFactory(void);
 
   /**
    * @fn getDeviceInfo

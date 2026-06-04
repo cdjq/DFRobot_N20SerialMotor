@@ -26,7 +26,8 @@ DFRobot_N20SerialMotor 是 DFR1277 串口 N20 电机驱动模块的 Arduino 库�
 * 初始化模块并校验 Modbus-RTU 通讯<br/>
 * 设置电机速度（`-255~255`）并支持快速停止<br/>
 * 配置从机地址（`1~32`）<br/>
-* 配置波特率、校验位和停止位<br/>
+* 配置波特率<br/>
+* 恢复出厂设置，默认参数重新上电后生效<br/>
 * 读取 VID/PID/版本并扫描总线设备
 
 ## 库安装
@@ -105,6 +106,16 @@ DFRobot_N20SerialMotor 是 DFR1277 串口 N20 电机驱动模块的 Arduino 库�
    * @retval -1 失败
    */
   int8_t setBaudrate(eBaudrate_t baud);
+
+  /**
+   * @fn restoreFactory
+   * @brief 恢复模块出厂设置。
+   * @n     默认参数在模块重新上电后生效。
+   * @return int8_t
+   * @retval 0 成功
+   * @retval -1 失败
+   */
+  int8_t restoreFactory(void);
 
   /**
    * @fn getDeviceInfo

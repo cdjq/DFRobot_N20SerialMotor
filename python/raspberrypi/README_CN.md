@@ -23,7 +23,8 @@ DFRobot_N20SerialMotor Python 是用于树莓派平台的 DFR1277 串口 N20 电
 * 打开串口并初始化模块通讯<br/>
 * 设置速度并停止电机<br/>
 * 设置和读取从机地址<br/>
-* 配置波特率、校验位、停止位<br/>
+* 配置波特率<br/>
+* 恢复出厂设置，默认参数重新上电后生效<br/>
 * 读取 VID/PID/版本并扫描设备地址
 
 ## 安装
@@ -93,6 +94,12 @@ pip3 install modbus_tk
       @n     BAUD_57600
       @n     BAUD_115200
       @return bool 成功返回 True。
+    '''
+
+  def restoreFactory(self):
+    '''!
+      @brief 恢复模块出厂设置。
+      @return bool 成功返回 True。默认参数在模块重新上电后生效。
     '''
 
   def get_device_info(self):

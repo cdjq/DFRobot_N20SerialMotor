@@ -23,7 +23,8 @@ DFRobot_N20SerialMotor Python is a Raspberry Pi Modbus-RTU driver for DFR1277 se
 * Open serial port and initialize module communication<br/>
 * Set speed and stop motor<br/>
 * Set/read slave address<br/>
-* Configure baudrate/parity/stop bits<br/>
+* Configure baudrate<br/>
+* Restore factory settings; defaults take effect after power-on again<br/>
 * Read module VID/PID/version and scan addresses
 
 ## Installation
@@ -93,6 +94,12 @@ Copy `DFRobot_N20SerialMotor.py` and example folder to your Raspberry Pi project
       @n     BAUD_57600
       @n     BAUD_115200
       @return bool True on success.
+    '''
+
+  def restoreFactory(self):
+    '''!
+      @brief Restore factory settings stored in the module.
+      @return bool True on success. Factory settings take effect after power-on again.
     '''
 
   def get_device_info(self):

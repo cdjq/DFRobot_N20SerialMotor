@@ -121,6 +121,15 @@ int8_t DFRobot_N20SerialMotor::setBaudrate(eBaudrate_t baud)
   return 0;
 }
 
+int8_t DFRobot_N20SerialMotor::restoreFactory(void)
+{
+  if (writeHoldingReg16(_addr, N20SERIAL_HOLDINGREG_RESET, N20SERIAL_FACTORY_RESET_VALUE) != 0) {
+    return -1;
+  }
+  delay(100);
+  return 0;
+}
+
 sDeviceInfo_t DFRobot_N20SerialMotor::getDeviceInfo(void)
 {
   sDeviceInfo_t info;

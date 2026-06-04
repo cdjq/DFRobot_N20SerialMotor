@@ -23,7 +23,7 @@
 
 #define N20SERIAL_BROADCAST_ADDR      0x00
 #define N20SERIAL_DEVICE_VID          0x3343
-#define N20SERIAL_DEVICE_PID          0x02C1
+#define N20SERIAL_DEVICE_PID          0x04FD
 
 #define N20SERIAL_INPUTREG_VID        0x0000
 #define N20SERIAL_INPUTREG_PID        0x0001
@@ -32,6 +32,8 @@
 #define N20SERIAL_INPUTREG_VERSION    0x0005
 #define N20SERIAL_INPUTREG_STATE      0x0006
 #define N20SERIAL_HOLDINGREG_SPEED    0x0007
+#define N20SERIAL_HOLDINGREG_RESET    0x0008
+#define N20SERIAL_FACTORY_RESET_VALUE 0x0001
 
 #define N20SERIAL_ADDR_MIN            0x01
 #define N20SERIAL_ADDR_MAX            0x20
@@ -159,6 +161,16 @@ public:
    * @retval -1 failed
    */
   int8_t setBaudrate(eBaudrate_t baud);
+
+  /**
+   * @fn restoreFactory
+   * @brief Restore factory settings stored in the module.
+   * @n     Factory settings take effect after the module is powered on again.
+   * @return int8_t
+   * @retval 0 success
+   * @retval -1 failed
+   */
+  int8_t restoreFactory(void);
 
   /**
    * @fn getDeviceInfo
