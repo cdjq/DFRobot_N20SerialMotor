@@ -56,7 +56,7 @@ int8_t DFRobot_N20SerialMotor::begin(void)
 #endif
   }
 
-  setTimeoutTimeMs(200);
+  setTimeoutTimeMs(100);
   if (_addr < N20SERIAL_ADDR_MIN || _addr > N20SERIAL_ADDR_MAX) {
     return -1;
   }
@@ -89,6 +89,7 @@ int8_t DFRobot_N20SerialMotor::setSpeed(int16_t speed)
   }
 
   if (writeHoldingReg16(_addr, N20SERIAL_HOLDINGREG_SPEED, (uint16_t)speed) != 0) {
+    delay(50);
     return -1;
   }
   return 0;
@@ -117,7 +118,7 @@ int8_t DFRobot_N20SerialMotor::setBaudrate(eBaudrate_t baud)
   if (writeHoldingReg16(_addr, N20SERIAL_HOLDINGREG_BAUDRATE, (uint16_t)baud) != 0) {
     return -1;
   }
-  delay(100);
+  delay(50);
   return 0;
 }
 
@@ -126,7 +127,7 @@ int8_t DFRobot_N20SerialMotor::restoreFactory(void)
   if (writeHoldingReg16(_addr, N20SERIAL_HOLDINGREG_RESET, N20SERIAL_FACTORY_RESET_VALUE) != 0) {
     return -1;
   }
-  delay(100);
+  delay(50);
   return 0;
 }
 
@@ -172,6 +173,8 @@ uint8_t DFRobot_N20SerialMotor::scan(uint8_t *addrBuf, uint8_t bufLen, uint8_t s
       }
     }
   }
+
+  delay(50);
 
   return count;
 }

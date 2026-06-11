@@ -24,18 +24,40 @@ port = "/dev/ttyAMA0"
 def main():
   motor = DFRobot_N20SerialMotor(port, slave_addr=1, baudrate=9600)
 
-  if not motor.begin():
-    print("Init failed, check wiring/address/baudrate.")
-    return
+  print()
+  print("========================================")
+  print("  DFRobot N20 Serial Motor")
+  print("  Single Motor Control Example")
+  print("========================================")
+
+  while not motor.begin():
+    print("[ERROR] Motor init failed, retrying...")
+    motor.close()
+    time.sleep(1)
+
+  print("[OK] Motor initialized (Modbus addr: 1)")
+  print("Starting speed control loop...")
+  print()
 
   try:
     while True:
+      print("-> Speed 200")
       motor.set_speed(200)
       time.sleep(2)
+
+      print("-> Speed 80")
+      motor.set_speed(80)
+      time.sleep(1.2)
+
+      print("-> Speed -200")
       motor.set_speed(-200)
       time.sleep(2)
+
+      print("-> Stop")
       motor.stop()
-      time.sleep(1)
+      time.sleep(1.5)
+
+      print()
   except KeyboardInterrupt:
     pass
   finally:

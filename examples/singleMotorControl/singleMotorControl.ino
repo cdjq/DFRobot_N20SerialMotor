@@ -33,26 +33,41 @@ DFRobot_N20SerialMotor motor(1, &Serial1, 9600);
 void setup()
 {
   Serial.begin(115200);
+  delay(1000);
+
+  Serial.println();
+  Serial.println(F("========================================"));
+  Serial.println(F("  DFRobot N20 Serial Motor"));
+  Serial.println(F("  Single Motor Control Example"));
+  Serial.println(F("========================================"));
 
   while (motor.begin() != 0) {
-    Serial.println("N20 serial motor init failed.");
+    Serial.println(F("[ERROR] Motor init failed, retrying..."));
     delay(1000);
   }
 
-  Serial.println("N20 serial motor init success.");
+  Serial.println(F("[OK] Motor initialized (Modbus addr: 1)"));
+  Serial.println(F("Starting speed control loop..."));
+  Serial.println();
 }
 
 void loop()
 {
+  Serial.println(F("-> Speed 200"));
   motor.setSpeed(200);
   delay(2000);
 
+  Serial.println(F("-> Speed 80"));
   motor.setSpeed(80);
   delay(1200);
 
+  Serial.println(F("-> Speed -200"));
   motor.setSpeed(-200);
   delay(2000);
 
+  Serial.println(F("-> Stop"));
   motor.stop();
   delay(1500);
+
+  Serial.println();
 }

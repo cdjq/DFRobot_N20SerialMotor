@@ -43,39 +43,51 @@ const uint8_t motorCount = sizeof(motors) / sizeof(motors[0]);
 void setup()
 {
   uint8_t i = 0;
-  uint8_t addrList[8];
-  uint8_t count = 0;
 
   Serial.begin(115200);
+  delay(1000);
+
+  Serial.println();
+  Serial.println(F("========================================"));
+  Serial.println(F("  DFRobot N20 Serial Motor"));
+  Serial.println(F("  Dual Motor Control Example"));
+  Serial.println(F("========================================"));
 
   for (i = 0; i < motorCount; i++) {
     while (motors[i].begin() != 0) {
-      Serial.print("Motor init failed, index: ");
-      Serial.println(i);
+      Serial.print(F("[ERROR] Motor "));
+      Serial.print(i + 1);
+      Serial.println(F(" init failed, retrying..."));
       delay(1000);
     }
+    Serial.print(F("[OK] Motor "));
+    Serial.print(i + 1);
+    Serial.print(F(" initialized (Modbus addr: "));
+    Serial.print(i + 1);
+    Serial.println(F(")"));
   }
 
-  count = motors[0].scan(addrList, sizeof(addrList));
-  Serial.print("Detected module count: ");
-  Serial.println(count);
-  for (i = 0; i < count; i++) {
-    Serial.print(" - Addr: ");
-    Serial.println(addrList[i]);
-  }
+  Serial.println(F("All motors ready."));
+  Serial.println(F("Starting dual motor control loop..."));
+  Serial.println();
 }
 
 void loop()
 {
+  Serial.println(F("-> M1 speed 180, M2 speed -180"));
   motors[0].setSpeed(180);
   motors[1].setSpeed(-180);
   delay(2000);
 
+  Serial.println(F("-> M1 speed -120, M2 speed 120"));
   motors[0].setSpeed(-120);
   motors[1].setSpeed(120);
   delay(2000);
 
+  Serial.println(F("-> Both motors stop"));
   motors[0].stop();
   motors[1].stop();
   delay(1500);
+
+  Serial.println();
 }

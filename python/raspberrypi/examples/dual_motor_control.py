@@ -27,28 +27,41 @@ def main():
     DFRobot_N20SerialMotor(port, slave_addr=2, baudrate=9600)
   ]
 
-  for i, motor in enumerate(motors):
-    if not motor.begin():
-      print("Motor init failed, index:", i)
-      for opened in motors[:i]:
-        opened.close()
-      return
+  print()
+  print("========================================")
+  print("  DFRobot N20 Serial Motor")
+  print("  Dual Motor Control Example")
+  print("========================================")
 
-  print("Scan result:", motors[0].scan())
+  for i, motor in enumerate(motors):
+    while not motor.begin():
+      print("[ERROR] Motor {} init failed, retrying...".format(i + 1))
+      motor.close()
+      time.sleep(1)
+    print("[OK] Motor {} initialized (Modbus addr: {})".format(i + 1, i + 1))
+
+  print("All motors ready.")
+  print("Starting dual motor control loop...")
+  print()
 
   try:
     while True:
+      print("-> M1 speed 180, M2 speed -180")
       motors[0].set_speed(180)
       motors[1].set_speed(-180)
       time.sleep(2)
 
+      print("-> M1 speed -120, M2 speed 120")
       motors[0].set_speed(-120)
       motors[1].set_speed(120)
       time.sleep(2)
 
+      print("-> Both motors stop")
       motors[0].stop()
       motors[1].stop()
-      time.sleep(1)
+      time.sleep(1.5)
+
+      print()
   except KeyboardInterrupt:
     pass
   finally:
