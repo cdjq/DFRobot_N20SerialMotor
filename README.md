@@ -25,18 +25,15 @@ DFRobot_N20SerialMotor is an Arduino library for DFR1277 Modbus-RTU serial N20 m
 
 * Initialize module and verify communication by Modbus-RTU<br/>
 * Set motor speed (`-255~255`) and stop quickly<br/>
-* Configure slave address (`1~32`)<br/>
-* Configure baudrate<br/>
+* Configure slave address (`1~247`); takes effect after power-on again<br/>
+* Configure baudrate; takes effect after power-on again<br/>
 * Restore factory settings; defaults take effect after power-on again<br/>
 * Read VID/PID/version and scan cascaded devices
 
 ## Installation
 
 Download this library and dependency library before use:
-
-* https://github.com/DFRobot/DFRobot_N20SerialMotor.git
 * https://github.com/DFRobot/DFRobot_RTU.git
-
 Copy both folders into `Arduino/libraries`, then open examples and run.
 
 ## Methods
@@ -82,7 +79,10 @@ Copy both folders into `Arduino/libraries`, then open examples and run.
   /**
    * @fn setDeviceAddr
    * @brief Set module device address.
-   * @param addr Address range: 1~32.
+   * @param addr Address range: 1~247.
+   * @n     The new address takes effect after the module is powered on again.
+   * @n     This function does not update the internal communication address;
+   * @n     recreate the object with the new address after the module restarts.
    * @return int8_t
    * @retval 0 success
    * @retval -1 failed
@@ -101,6 +101,9 @@ Copy both folders into `Arduino/libraries`, then open examples and run.
    * @n     eBaud38400
    * @n     eBaud57600
    * @n     eBaud115200
+   * @n     The new baudrate takes effect after the module is powered on again.
+   * @n     This function does not update the host serial baudrate;
+   * @n     recreate the object with the new baudrate after the module restarts.
    * @return int8_t
    * @retval 0 success
    * @retval -1 failed

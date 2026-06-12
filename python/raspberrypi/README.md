@@ -41,19 +41,19 @@ Copy `DFRobot_N20SerialMotor.py` and example folder to your Raspberry Pi project
 
 ```python
 
-  def __init__(self, port, slave_addr=1, baudrate=9600, timeout=0.2):
+  def __init__(self, port, slave_addr=1, baudrate=9600, bus=None):
     '''!
       @brief Constructor.
       @param port Serial port name, e.g. "/dev/ttyAMA0".
       @param slave_addr Modbus slave address.
       @param baudrate Host serial baudrate.
-      @param timeout Serial timeout in seconds.
+      @param bus Another instance to share the serial bus with.
     '''
 
   def begin(self):
     '''!
-      @brief Open serial port and check target device.
-      @return bool True if device is reachable.
+      @brief Verify target device on the opened serial port.
+      @return int 0 on success, -1 on failure.
     '''
 
   def close(self):
@@ -77,7 +77,10 @@ Copy `DFRobot_N20SerialMotor.py` and example folder to your Raspberry Pi project
   def set_device_addr(self, addr):
     '''!
       @brief Set module device address.
-      @param addr Range: 1~32.
+      @param addr Range: 1~247.
+      @n     The new address takes effect after the module is powered on again.
+      @n     This method does not update the internal communication address;
+      @n     recreate the object with the new address after the module restarts.
       @return bool True on success.
     '''
 
@@ -93,6 +96,9 @@ Copy `DFRobot_N20SerialMotor.py` and example folder to your Raspberry Pi project
       @n     BAUD_38400
       @n     BAUD_57600
       @n     BAUD_115200
+      @n     The new baudrate takes effect after the module is powered on again.
+      @n     This method does not update the host serial baudrate;
+      @n     recreate the object with the new baudrate after the module restarts.
       @return bool True on success.
     '''
 
@@ -108,7 +114,7 @@ Copy `DFRobot_N20SerialMotor.py` and example folder to your Raspberry Pi project
       @return tuple (vid, pid, version).
     '''
 
-  def scan(self, start_addr=1, end_addr=32):
+  def scan(self, start_addr=1, end_addr=247):
     '''!
       @brief Scan bus addresses.
       @param start_addr Start address of scan range.

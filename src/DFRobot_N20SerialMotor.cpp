@@ -56,7 +56,7 @@ int8_t DFRobot_N20SerialMotor::begin(void)
 #endif
   }
 
-  setTimeoutTimeMs(100);
+  setTimeoutTimeMs(200);
   if (_addr < N20SERIAL_ADDR_MIN || _addr > N20SERIAL_ADDR_MAX) {
     return -1;
   }
@@ -76,7 +76,7 @@ bool DFRobot_N20SerialMotor::detectDeviceAddress(uint8_t addr)
   if (!readReg16Compat(addr, N20SERIAL_INPUTREG_VID, vid)) {
     return false;
   }
-  return (vid == N20SERIAL_DEVICE_VID || vid == 0x4333);
+  return (vid == N20SERIAL_DEVICE_VID);
 }
 
 int8_t DFRobot_N20SerialMotor::setSpeed(int16_t speed)
@@ -108,7 +108,6 @@ int8_t DFRobot_N20SerialMotor::setDeviceAddr(uint8_t addr)
   if (writeHoldingReg16(_addr, N20SERIAL_HOLDINGREG_ADDR, addr) != 0) {
     return -1;
   }
-  _addr = addr;
   delay(50);
   return 0;
 }
@@ -185,7 +184,7 @@ bool DFRobot_N20SerialMotor::readReg16Compat(uint8_t devAddr, uint16_t reg, uint
   value = 0;
 
   if (readInputReg(devAddr, reg, recvBuf, 2) == 0) {
-    value = ((uint16_t)recvBuf[0] << 8) | recvBuf[1];
+    value = ((uint16_t)recvBuf[1] << 8) | recvBuf[0];
     return true;
   }
   return false;

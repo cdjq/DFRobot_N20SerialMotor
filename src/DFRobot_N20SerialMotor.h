@@ -36,7 +36,7 @@
 #define N20SERIAL_FACTORY_RESET_VALUE 0x0001
 
 #define N20SERIAL_ADDR_MIN            0x01
-#define N20SERIAL_ADDR_MAX            0x20
+#define N20SERIAL_ADDR_MAX            0xF7
 
 /**
  * @enum eBaudrate_t
@@ -76,33 +76,12 @@ typedef struct {
 
 class DFRobot_N20SerialMotor : public DFRobot_RTU {
 public:
-  /**
-   * @fn DFRobot_N20SerialMotor
-   * @brief Constructor.
-   * @param addr Modbus slave address.
-   * @param s Stream pointer used for Modbus-RTU communication.
-   */
+
   DFRobot_N20SerialMotor(uint8_t addr, Stream *s);
 
 #if defined(ESP8266) || defined(ARDUINO_AVR_UNO)
-  /**
-   * @fn DFRobot_N20SerialMotor
-   * @brief Constructor.
-   * @param addr Modbus slave address.
-   * @param sSerial Software serial port used for Modbus-RTU communication.
-   * @param baud Serial communication baudrate.
-   */
   DFRobot_N20SerialMotor(uint8_t addr, SoftwareSerial *sSerial, uint32_t baud);
 #else
-  /**
-   * @fn DFRobot_N20SerialMotor
-   * @brief Constructor.
-   * @param addr Modbus slave address.
-   * @param hSerial Hardware serial port used for Modbus-RTU communication.
-   * @param baud Serial communication baudrate.
-   * @param rxpin RX pin, used by ESP32.
-   * @param txpin TX pin, used by ESP32.
-   */
   DFRobot_N20SerialMotor(uint8_t addr, HardwareSerial *hSerial, uint32_t baud, uint8_t rxpin = 0, uint8_t txpin = 0);
 #endif
 
@@ -137,7 +116,10 @@ public:
   /**
    * @fn setDeviceAddr
    * @brief Set module device address.
-   * @param addr Address range: 1~32.
+   * @param addr Address range: 1~247.
+   * @n     The new address takes effect after the module is powered on again.
+   * @n     This function does not update the internal communication address;
+   * @n     recreate the object with the new address after the module restarts.
    * @return int8_t
    * @retval 0 success
    * @retval -1 failed
@@ -156,6 +138,9 @@ public:
    * @n     eBaud38400
    * @n     eBaud57600
    * @n     eBaud115200
+   * @n     The new baudrate takes effect after the module is powered on again.
+   * @n     This function does not update the host serial baudrate;
+   * @n     recreate the object with the new baudrate after the module restarts.
    * @return int8_t
    * @retval 0 success
    * @retval -1 failed

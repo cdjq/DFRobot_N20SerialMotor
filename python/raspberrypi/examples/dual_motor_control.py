@@ -22,9 +22,10 @@ port = "/dev/ttyAMA0"
 
 
 def main():
+  motor0 = DFRobot_N20SerialMotor(port, slave_addr=1, baudrate=9600)
   motors = [
-    DFRobot_N20SerialMotor(port, slave_addr=1, baudrate=9600),
-    DFRobot_N20SerialMotor(port, slave_addr=2, baudrate=9600)
+    motor0,
+    DFRobot_N20SerialMotor(port, slave_addr=2, baudrate=9600, bus=motor0)
   ]
 
   print()
@@ -34,9 +35,8 @@ def main():
   print("========================================")
 
   for i, motor in enumerate(motors):
-    while not motor.begin():
+    while motor.begin() == -1:
       print("[ERROR] Motor {} init failed, retrying...".format(i + 1))
-      motor.close()
       time.sleep(1)
     print("[OK] Motor {} initialized (Modbus addr: {})".format(i + 1, i + 1))
 
@@ -65,8 +65,8 @@ def main():
   except KeyboardInterrupt:
     pass
   finally:
-    for motor in motors:
-      motor.close()
+    motors[1].close()
+    motors[0].close()
 
 
 if __name__ == "__main__":

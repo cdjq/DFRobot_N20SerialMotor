@@ -1,15 +1,413 @@
-name: CI
-on:
+---
+name: Arduino Library CI
+
+on: 
   push:
     branches:
-      - "**"   # 监听所有分支，避免分支名不匹配导致不触发
+      - "**"       # 普通分支推送时运行代码检查
     tags:
-        - "v*.*.*"   # 小写 v 触发
-        - "V*.*.*"   # 大写 V 触发
+      - "v*.*.*"   # 小写 v 触发
+      - "V*.*.*"   # 大写 V 触发
   pull_request:
-  workflow_dispatch:  # 允许在 Actions 页面手动触发
+  repository_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+env:
+  PYTHON_3: "3.11.13"
+  REQUIREMENTS_PATH: './.github/config/requirements.txt' ## 依赖文件路径
 
 jobs:
-  call-reusable:
-    uses: cdjq/cloud-code-checks/.github/workflows/ci.yml@master
-    secrets: inherit
+  common:                                       ## 这个job必须放在最前面，因为它会设置一些环境变量供后续job使用
+    name: Create common environment
+    runs-on: ubuntu-24.04
+    outputs:
+      cache-key: ${{ steps.cache-key.outputs.key }} ## 输出缓存 key，供后续 job 使用
+    steps:
+      - name: Check out code from GitHub        ## 拉取代码到虚拟机
+        uses: actions/checkout@v5.0.0
+
+      - name: Check out cdjq/cloud-code-checks for shared configs and actions
+        uses: actions/checkout@v5.0.0
+        with:
+          repository: cdjq/cloud-code-checks
+          ref: master
+          path: .action
+
+      - name: Prepare shared .github/config and .github/actions
+        run: |
+          mkdir -p .github/config
+          cp -r .action/.github/config/* .github/config/ || true
+          mkdir -p .github/actions
+          cp -r .action/.github/actions/* .github/actions/ || true
+
+      - name: Generate cache-key                ## 根据依赖文件生成缓存 key
+        id: cache-key
+        run: |
+          echo key="${{ hashFiles(env.REQUIREMENTS_PATH, '.pre-commit-config.yaml') }}" >> $GITHUB_OUTPUT
+
+      - name: set up Python ${{ env.PYTHON_3 }} ## 设置 Python 3 环境
+        id: python3
+        uses: actions/setup-python@v6.0.0
+        with:
+          python-version: ${{ env.PYTHON_3 }}
+
+      - name: Cache venv                        ## 缓存虚拟环境
+        id: cache-venv
+        uses: actions/cache@v5
+        with:
+          path: venv                            ## 缓存路径
+          key: ${{ runner.os }}-${{ env.PYTHON_3 }}-venv-${{ steps.cache-key.outputs.key }}
+
+      - name: Create Python virtual environment ## 创建 Python 虚拟环境
+        run: |
+          python -m venv venv
+          . venv/bin/activate
+          pip install -r ${{ env.REQUIREMENTS_PATH }}
+
+      - name: Save venv to cache
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+        uses: actions/cache@v5
+        with:
+          path: venv
+          key: ${{ runner.os }}-${{ env.PYTHON_3 }}-venv-${{ steps.cache-key.outputs.key }}
+
+  pylint:
+    if: >
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/'))
+      || github.event_name == 'pull_request'
+      || github.event_name == 'repository_dispatch'
+      || github.event_name == 'workflow_call'
+
+    runs-on: ubuntu-24.04
+    permissions:
+      checks: write
+      contents: read
+    # continue-on-error: true
+    needs:
+      - common                      ## 依赖 common job，确保环境变量已设置
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v5.0.0           ##检查代码
+
+      - name: Check out cdjq/cloud-code-checks for shared configs
+        uses: actions/checkout@v5.0.0
+        with:
+          repository: cdjq/cloud-code-checks
+          ref: master
+          path: .action
+
+      - name: Restore Python 3                ## 还原 Python 3 环境
+        uses: cdjq/cloud-code-checks/.github/actions@master
+        with:
+          python-version: ${{ env.PYTHON_3 }}
+          cache-key: ${{ needs.common.outputs.cache-key }}
+
+      - name: Run pylint
+        if: always()
+        shell: bash {0}   # 去掉默认的 -e, 方便输出错误信息
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          . venv/bin/activate
+
+          FILES=$(find . -type f -name "*.py" -not -path "*/.venv/*" -not -path "*/venv/*" -not -path "*/.git/*")
+
+          # 如果为空则跳过
+          if [ -z "$FILES" ]; then
+            echo "No Python files found. Skipping pylint."
+            exit 0
+          fi
+          set +e
+          pylint  -f parseable --rcfile=.action/.github/config/.pylintrc --persistent=n $FILES ## || true  ##运行 pylint 检查代码规范
+          PYLINT_EXIT=$?
+          echo "Pylint exit code: $PYLINT_EXIT"
+
+          if [ $PYLINT_EXIT -eq 0 ]; then
+            echo "✅ Pylint passed"
+            exit 0
+          elif [ $PYLINT_EXIT -eq 20 ]; then
+            echo "⚠️ Pylint found errors or warnings"
+            curl --silent --show-error --location \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -X POST https://api.github.com/repos/$GITHUB_REPOSITORY/check-runs \
+            --data-binary @- >/dev/null 2>&1 <<EOF
+          {
+            "name": "Pylint Check",
+            "head_sha": "$GITHUB_SHA",
+            "status": "completed",
+            "conclusion": "neutral",
+            "completed_at": "$(date -u +'%Y-%m-%dT%H:%M:%SZ')",
+            "output": {
+              "title": "Pylint check warnings",
+              "summary": "⚠️ 存在警告，请点击左侧导航栏 [pylint] ---->>> [Run pylint] 查看警告日志。",
+              "text": "### 说明\n本次构建存在 Pylint 警告，详细输出已在 Actions 日志中展示。"
+            }
+          }
+          EOF
+
+            else
+              echo "❌ Pylint failed"
+              exit $PYLINT_EXIT
+            fi
+
+      - name: Suggested changes
+        run: |
+          if git diff --quiet; then
+            echo "No changes suggested by pylint."
+          else
+            echo "Changes suggested by pylint:"
+            git --no-pager diff
+            exit 1
+          fi
+        if: always()
+
+  clang-tidy:
+    if: >
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/'))
+      || github.event_name == 'pull_request'
+      || github.event_name == 'repository_dispatch'
+      || github.event_name == 'workflow_call'
+
+    name: check clang-tidy and build
+    runs-on: ubuntu-24.04
+    permissions:
+      checks: write
+      contents: read
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    needs:
+      - common
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5.0.0
+
+      - name: Check out cdjq/cloud-code-checks for shared configs
+        uses: actions/checkout@v5.0.0
+        with:
+          repository: cdjq/cloud-code-checks
+          ref: master
+          path: .action
+
+      - name: Restore Python 3
+        uses: cdjq/cloud-code-checks/.github/actions@master
+        with:
+          python-version: ${{ env.PYTHON_3 }}
+          cache-key: ${{ needs.common.outputs.cache-key }}
+        
+
+      - name: Install PlatformIO
+        run: | 
+          pip install platformio
+          cp ./.action/.github/config/platformio.ini .
+
+          # 检查 library.properties 是否存在
+          if [ -f library.properties ]; then
+              # 提取 depends 字段
+              DEPENDS=$(awk -F= '/^[[:space:]]*depends[[:space:]]*=/ {print $2; exit}' library.properties | tr -d '\r')
+
+              # 如果 DEPENDS 非空才继续处理
+              if [ -n "$DEPENDS" ]; then
+                  echo "Library dependencies found: $DEPENDS"
+
+                  # 如果 platformio.ini 中没有 lib_deps 段，新增
+                  if ! grep -q 'lib_deps' platformio.ini; then
+                      echo "Adding lib_deps to platformio.ini"
+                      echo "lib_deps =" >> ./platformio.ini
+                  fi
+
+                  # 将每个依赖（逗号分隔）添加到 lib_deps，每行一个
+                  echo "$DEPENDS" | tr ',' '\n' | while read dep; do
+                      dep=$(echo "$dep" | xargs)  # 去掉首尾空格
+                      dep_name=$(echo "$dep" | sed 's/[[:space:]]*(.*$//' | xargs)
+                      dep_key=$(echo "$dep_name" | tr '[:upper:]' '[:lower:]')
+
+                      case "$dep_key" in
+                        arduino|wire|spi|eeprom|servo|softwareserial|hardwareserial)
+                          echo "Skipping built-in Arduino library dependency: $dep_name"
+                          continue
+                          ;;
+                      esac
+                      if [ -n "$dep" ]; then
+                          echo "    $dep" >> platformio.ini
+                      fi
+                  done
+              else
+                  echo "No depends field found in library.properties, skipping lib_deps update."
+              fi
+          else
+              echo "library.properties not found, skipping lib_deps update."
+          fi
+
+      - name: Generate compile_commands.json
+        run: | 
+          pio run -t compiledb
+
+          # 输出打印 compile_commands.json
+          # echo "compile_commands.json:"
+          # jq . compile_commands.json
+
+      - name: Run clang-tidy
+        if: always()
+        run: |
+          FILES=$(find . \
+          -path './.git'    -prune -o \
+          -path './.github' -prune -o \
+          -path './.pio'   -prune -o \
+          -type f \( -name 'DFRobot_*.cpp' -o -name 'DFRobot_*.h' -o -name '*.ino' \) -print)
+
+          INCLUDE_ARGS=()
+          while IFS= read -r include_dir; do
+              [ -n "$include_dir" ] || continue
+              INCLUDE_ARGS+=("-extra-arg=-I$include_dir")
+          done < <(
+              {
+                  find "$HOME/.platformio/packages" -type d \
+                    \( -path '*/framework-arduino*/cores/*' \
+                    -o -path '*/framework-arduino*/variants/*' \
+                    -o -path '*/framework-arduino*/libraries/*/src' \) \
+                    -print 2>/dev/null || true
+                  find "$HOME/.platformio/packages" -path '*/toolchain-*' -type d -prune \
+                    -exec find {} -type d \
+                    \( -name include -o -name include-fixed \) \
+                    -print \; 2>/dev/null || true
+                  find ./.pio/libdeps -type d -path './.pio/libdeps/*/*/src' -print 2>/dev/null || true
+                  [ -d ./src ] && printf '%s\n' ./src
+                  [ -d ./include ] && printf '%s\n' ./include
+              } | sort -u
+          )
+          INCLUDE_ARGS+=("-extra-arg=-DARDUINO=10819")
+          INCLUDE_ARGS+=("-extra-arg=-DARDUINO_AVR_MEGA2560")
+          INCLUDE_ARGS+=("-extra-arg=-DARDUINO_ARCH_AVR")
+          INCLUDE_ARGS+=("-extra-arg=-D__AVR__")
+          INCLUDE_ARGS+=("-extra-arg=-D__AVR_ATmega2560__")
+          INCLUDE_ARGS+=("-extra-arg=-DF_CPU=16000000L")
+          INCLUDE_ARGS+=("-extra-arg=-x")
+          INCLUDE_ARGS+=("-extra-arg=c++")
+          
+          echo "Running clang-tidy on $FILES"
+          
+          # echo "clang-tidy extra args:"        # 输出打印 
+          # printf '  %s\n' "${INCLUDE_ARGS[@]}" # 输出打印 clang-tidy include_dir参数
+
+          if [ -z "$FILES" ]; then               # 检查是否有文件
+              echo "No source files found."
+              exit 0
+          fi
+          HEADER_FILTER="^(\\./)?(src|include|examples)/|^$PWD/(src|examples)/"
+          OUTPUT=$(clang-tidy $FILES -p . \
+          "${INCLUDE_ARGS[@]}" \
+          -header-filter="$HEADER_FILTER" \
+          -config-file=.action/.github/config/.clang-tidy \
+          2>&1 || true)
+
+          echo "$OUTPUT"
+
+          if echo "❌ $OUTPUT" | grep -q "error:"; then
+            echo "::error::clang-tidy found errors."
+            exit 1
+          elif echo "$OUTPUT" | grep -q "warning:"; then
+            echo "⚠️ clang-tidy found warnings."
+
+            curl --silent --show-error --location \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -X POST https://api.github.com/repos/$GITHUB_REPOSITORY/check-runs \
+            --data-binary @- >/dev/null 2>&1 <<EOF
+          {
+            "name": "Clang-Tidy Check",
+            "head_sha": "$GITHUB_SHA",
+            "status": "completed",
+            "conclusion": "neutral",
+            "completed_at": "$(date -u +'%Y-%m-%dT%H:%M:%SZ')",
+            "details_url": "https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID",
+            "output": {
+              "title": "Clang-Tidy check warnings",
+              "summary": "⚠️ 存在警告，请点击左侧导航栏 [check clang-tidy and build] ---->>> [Run clang-tidy] 查看警告日志。",
+              "text": "### 说明\n本次构建存在 clang-tidy 警告，详细输出已在 Actions 日志中展示。"
+            }
+          }
+          EOF
+          else
+            echo "✅ clang-tidy passed"
+            exit 0
+          fi
+
+  release:
+      name: Check tag version
+      if: startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/V')
+      runs-on: ubuntu-24.04
+      permissions:
+        contents: write
+      needs: common
+      concurrency:
+        group: release-${{ github.ref }}
+        cancel-in-progress: true
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v5.0.0
+          with:
+            fetch-depth: 0
+
+        - name: Verify library.properties version
+          id: verify
+          run: |
+            RAW_TAG="${GITHUB_REF#refs/tags/}"      # 例如 v1.0.1 或 V1.0.1
+            TAG_VERSION="${RAW_TAG#[vV]}"           # 去掉前导 v 或 V -> 1.0.1
+
+            # 读取并清理文件里的 version= 值
+            if [ ! -f library.properties ]; then
+              echo "❌ library.properties not found"
+              exit 1
+            fi
+            FILE_VERSION="$(awk -F= '/^[[:space:]]*version[[:space:]]*=/ {print $2; exit}' library.properties \
+              | tr -d '\r' | xargs)"
+            echo "📦 Tag version: $TAG_VERSION"
+            echo "🧾 File version: $FILE_VERSION"
+
+            if [ "$TAG_VERSION" != "$FILE_VERSION" ]; then
+              echo "❌ Version mismatch!"
+              echo "library.properties version ($FILE_VERSION) does not match tag ($TAG_VERSION)"
+              exit 1
+            fi
+
+            echo "✅ Version match confirmed: $TAG_VERSION"
+            echo "tag_version=$TAG_VERSION" >> $GITHUB_OUTPUT
+
+        # - name: Create release zip
+        #   id: zip
+        #   run: |
+        #     ZIP_NAME="${{ github.event.repository.name }}_${{ steps.verify.outputs.tag_version }}.zip"
+        #     echo "Creating $ZIP_NAME"
+        #     zip -r "$ZIP_NAME" . \
+        #       -x '*.git*' '.github/*' '__pycache__/*' # 排除不必要的文件 .github  、.git  、__pycache__
+        #     echo "zip_name=$ZIP_NAME" >> $GITHUB_OUTPUT
+
+        # - name: Upload GitHub Release
+        #   uses: softprops/action-gh-release@v2
+        #   with:
+        #     files: ${{ steps.zip.outputs.zip_name }}
+        #     generate_release_notes: true
+        #   env:
+        #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  ci-status:
+    runs-on: ubuntu-24.04
+    needs:
+      - common
+      - pylint
+      - clang-tidy
+      - release
+    if: always()
+    steps:
+      - name: Print job results
+        run: |
+          echo "==== CI Summary ===="
+          echo "common:     ${{ needs.common.result }}"
+          echo "pylint:     ${{ needs.pylint.result }}"
+          echo "clang-tidy: ${{ needs['clang-tidy'].result }}"
+          echo "release:    ${{ needs.release.result }}"
+          echo "===================="

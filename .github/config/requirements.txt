@@ -1,0 +1,3 @@
+# requirements.txt - GitHub 云端检查依赖
+pylint>=2.15
+click==8.1.7

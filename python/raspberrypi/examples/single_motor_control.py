@@ -30,9 +30,8 @@ def main():
   print("  Single Motor Control Example")
   print("========================================")
 
-  while not motor.begin():
+  while motor.begin() == -1:
     print("[ERROR] Motor init failed, retrying...")
-    motor.close()
     time.sleep(1)
 
   print("[OK] Motor initialized (Modbus addr: 1)")

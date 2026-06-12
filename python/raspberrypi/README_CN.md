@@ -41,19 +41,19 @@ pip3 install modbus_tk
 
 ```python
 
-  def __init__(self, port, slave_addr=1, baudrate=9600, timeout=0.2):
+  def __init__(self, port, slave_addr=1, baudrate=9600, bus=None):
     '''!
       @brief 构造函数。
       @param port 串口名称，如 "/dev/ttyAMA0"。
       @param slave_addr Modbus 从机地址。
       @param baudrate 主机串口波特率。
-      @param timeout 串口超时时间（秒）。
+      @param bus 共享同一串口总线的另一个实例。
     '''
 
   def begin(self):
     '''!
-      @brief 打开串口并检测目标设备。
-      @return bool 设备可达返回 True。
+      @brief 在已打开的串口上检测目标设备。
+      @return int 成功返回 0，失败返回 -1。
     '''
 
   def close(self):
@@ -77,7 +77,10 @@ pip3 install modbus_tk
   def set_device_addr(self, addr):
     '''!
       @brief 设置模块设备地址。
-      @param addr 范围：1~32。
+      @param addr 范围：1~247。
+      @n     新地址在模块重新上电后生效。
+      @n     本方法不会更新内部通讯地址；
+      @n     模块重启后请使用新地址重新创建对象。
       @return bool 成功返回 True。
     '''
 
@@ -93,6 +96,9 @@ pip3 install modbus_tk
       @n     BAUD_38400
       @n     BAUD_57600
       @n     BAUD_115200
+      @n     新波特率在模块重新上电后生效。
+      @n     本方法不会更新主机串口波特率；
+      @n     模块重启后请使用新波特率重新创建对象。
       @return bool 成功返回 True。
     '''
 
@@ -108,7 +114,7 @@ pip3 install modbus_tk
       @return tuple (vid, pid, version)。
     '''
 
-  def scan(self, start_addr=1, end_addr=32):
+  def scan(self, start_addr=1, end_addr=247):
     '''!
       @brief 扫描总线地址。
       @param start_addr 扫描起始地址。
