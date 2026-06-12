@@ -102,7 +102,7 @@ Copy `DFRobot_N20SerialMotor.py` and example folder to your Raspberry Pi project
       @return bool True on success.
     '''
 
-  def restoreFactory(self):
+  def restore_factory(self):
     '''!
       @brief Restore factory settings stored in the module.
       @return bool True on success. Factory settings take effect after power-on again.

@@ -152,7 +152,7 @@ class DFRobot_N20SerialMotor:
     time.sleep(0.05)
     return True
 
-  def restoreFactory(self):
+  def restore_factory(self):
     '''!
       @brief Restore factory settings stored in the module.
       @return bool True on success.

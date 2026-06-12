@@ -102,7 +102,7 @@ pip3 install modbus_tk
       @return bool 成功返回 True。
     '''
 
-  def restoreFactory(self):
+  def restore_factory(self):
     '''!
       @brief 恢复模块出厂设置。
       @return bool 成功返回 True。默认参数在模块重新上电后生效。
