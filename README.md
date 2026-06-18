@@ -134,6 +134,12 @@ Copy both folders into `Arduino/libraries`, then open examples and run.
   uint8_t scanAddress(uint8_t *addrBuf, uint8_t bufLen, uint8_t startAddr = 1, uint8_t endAddr = 32);
 ```
 
+## Examples
+
+* `singleMotorControl`: Initialize one motor and run forward/reverse speed control.
+* `dualMotorControl`: Initialize two cascaded motors and control them on the same bus.
+* `addressScan`: Scan the Modbus-RTU bus and print discovered motor addresses.
+
 ## Compatibility
 
 MCU                | Work Well    |   Work Wrong    | Untested    | Remarks

@@ -16,7 +16,7 @@
 #include <SoftwareSerial.h>
 #endif
 
-/* ---------------------------------------------------------------------------------------------------------------------
+/* -----------------------------------------------------------------------------------------------------------------------
   *    board   |             MCU                | Leonardo/Mega2560/M0 |    UNO    | ESP8266 | ESP32 |  microbit  |   m0  |
   *     VCC    |              5V                |         5V           |     5V    |    5V   |   5V  |     X      |   5V  |
   *     GND    |              GND               |        GND           |    GND    |   GND   |  GND  |     X      |  GND  |
@@ -96,29 +96,11 @@ void setup()
       Serial.print(F(" initialized (Modbus addr: "));
       Serial.print(motorAddrs[i]);
       Serial.println(F(")"));
-    } else {
+    } 
+    else {
       Serial.print(F("[ERROR] Motor "));
       Serial.print(i + 1);
-      Serial.println(F(" init failed, scanning bus..."));
-      Serial.println("This might take about 30 seconds. Please be patient and wait.");
-
-      foundCount = motors[0].scanAddress(scanBuf, sizeof(scanBuf));
-      if (foundCount == 0) {
-        Serial.println(F("[SCAN] No device found on bus."));
-      } else {
-        Serial.print(F("[SCAN] Found "));
-        Serial.print(foundCount);
-        Serial.println(F(" device(s), address:"));
-        for (j = 0; j < foundCount; j++) {
-          Serial.print(scanBuf[j]);
-          Serial.print(F(" "));
-        }
-      }
-
-      Serial.println(F("[ERROR] Motor init failed. Please check whether the device address is correct."));
-      while (1) {
-        delay(1000);
-      }
+      Serial.println(F(" init failed, You can check whether the address is correct through the address scan."));
     }
   }
 

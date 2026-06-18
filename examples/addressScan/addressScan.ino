@@ -1,12 +1,12 @@
 /*!
- * @file singleMotorControl.ino
- * @brief Single motor control demo.
- * @details Demo for initializing one serial motor module and driving forward/backward.
+ * @file addressScan.ino
+ * @brief Scan N20 serial motor addresses on the Modbus-RTU bus.
+ * @details Scan the configured address range and print the discovered module addresses.
  * @copyright Copyright (c) 2026 DFRobot Co.Ltd (http://www.dfrobot.com)
  * @license The MIT License (MIT)
  * @author JiaLi(zhixin.liu@dfrobot.com)
  * @version V1.0.0
- * @date 2026-05-09
+ * @date 2026-06-18
  * @url https://github.com/DFRobot/DFRobot_N20SerialMotor
  */
 
@@ -23,22 +23,28 @@
   *     RX     |              TX                |     Serial1 TX1      |     4     |   4/D7  | 25/D2 |     X      |  tx1  |
   *     TX     |              RX                |     Serial1 RX1      |     5     |   5/D6  | 26/D3 |     X      |  rx1  |
   * ----------------------------------------------------------------------------------------------------------------------*/
-/* Baud rate can be changed */
+/* Baud rate and scan range can be changed */
 
-#define MOTOR_ADDR 1
 #define MOTOR_BAUD 9600
+#define SCAN_START_ADDR 1
+#define SCAN_END_ADDR 32
+#define SCAN_BUF_LEN 32
 
 #if defined(ESP8266) || defined(ARDUINO_AVR_UNO)
 SoftwareSerial n20Serial(4, 5);
-DFRobot_N20SerialMotor motor(MOTOR_ADDR, &n20Serial);
+DFRobot_N20SerialMotor scanner(SCAN_START_ADDR, &n20Serial);
 #elif defined(ESP32)
-DFRobot_N20SerialMotor motor(MOTOR_ADDR, &Serial1);
+DFRobot_N20SerialMotor scanner(SCAN_START_ADDR, &Serial1);
 #else
-DFRobot_N20SerialMotor motor(MOTOR_ADDR, &Serial1);
+DFRobot_N20SerialMotor scanner(SCAN_START_ADDR, &Serial1);
 #endif
 
 void setup()
 {
+  uint8_t scanBuf[SCAN_BUF_LEN] = { 0 };
+  uint8_t foundCount = 0;
+  uint8_t j = 0;
+
   Serial.begin(115200);
 
 #if defined(ESP8266) || defined(ARDUINO_AVR_UNO)
@@ -54,36 +60,33 @@ void setup()
   Serial.println();
   Serial.println(F("========================================"));
   Serial.println(F("  DFRobot N20 Serial Motor"));
-  Serial.println(F("  Single Motor Control Example"));
+  Serial.println(F("  Address Scan Example"));
   Serial.println(F("========================================"));
+  Serial.print(F("[SCAN] Range: "));
+  Serial.print(SCAN_START_ADDR);
+  Serial.print(F("~"));
+  Serial.println(SCAN_END_ADDR);
+  Serial.println(F("[SCAN] Scanning bus..."));
+  Serial.println("Please be patient and wait.");
 
-  while (motor.begin() != 0) {
-    Serial.println(F("[ERROR] Motor init failed, retrying..."));
-    delay(1000);
+  foundCount = scanner.scanAddress(scanBuf, sizeof(scanBuf), SCAN_START_ADDR, SCAN_END_ADDR);
+
+  if (foundCount == 0) {
+    Serial.println(F("[SCAN] No device found on bus."));
+  } else {
+    Serial.print(F("[SCAN] Found "));
+    Serial.print(foundCount);
+    Serial.println(F(" device(s), address:"));
+    for (j = 0; j < foundCount; j++) {
+      Serial.print(scanBuf[j]);
+      Serial.print(F(" "));
+    }
+    Serial.println();
   }
 
-  Serial.println(F("[OK] Motor initialized (Modbus addr: 1)"));
-  Serial.println(F("Starting speed control loop..."));
-  Serial.println();
+  Serial.println(F("[SCAN] Done."));
 }
 
 void loop()
 {
-  Serial.println(F("-> Speed 200"));
-  motor.setSpeed(200);
-  delay(2000);
-
-  Serial.println(F("-> Speed 80"));
-  motor.setSpeed(80);
-  delay(1200);
-
-  Serial.println(F("-> Speed -200"));
-  motor.setSpeed(-200);
-  delay(2000);
-
-  Serial.println(F("-> Stop"));
-  motor.setSpeed(0);
-  delay(1500);
-
-  Serial.println();
 }

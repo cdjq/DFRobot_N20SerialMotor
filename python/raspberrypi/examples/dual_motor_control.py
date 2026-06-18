@@ -21,6 +21,8 @@ from DFRobot_N20SerialMotor import DFRobot_N20SerialMotor
 
 port = "/dev/ttyAMA0"
 MOTOR_BAUD = 9600
+SCAN_START_ADDR = 1
+SCAN_END_ADDR = 32
 
 ser = serial.Serial(port=port, baudrate=MOTOR_BAUD, bytesize=8, parity='N', stopbits=1)
 ser.reset_input_buffer()
@@ -55,9 +57,9 @@ def setup():
       print("[OK] Motor {} initialized (Modbus addr: {})".format(i + 1, i + 1))
     else:
       print("[ERROR] Motor {} init failed, scanning bus...".format(i + 1))
-      print("This might take about 3 minutes. Please be patient and wait.")
+      print("This might take about 30 seconds. Please be patient and wait.")
 
-      found_addrs = motors[0].scan_address()
+      found_addrs = motors[0].scan_address(SCAN_START_ADDR, SCAN_END_ADDR)
       if not found_addrs:
         print("[SCAN] No device found on bus.")
       else:

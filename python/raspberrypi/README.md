@@ -116,7 +116,6 @@ Copy `DFRobot_N20SerialMotor.py` and example folder to your Raspberry Pi project
       @return list Detected address list.
     '''
 ```
-
 ## History
 
 - 2026-05-09 - Version 1.0.0 released.

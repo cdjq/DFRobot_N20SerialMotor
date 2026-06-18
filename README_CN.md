@@ -134,6 +134,12 @@ N20 电机驱动模块的 Arduino 库，基于 Modbus-RTU 协议，可实现电�
   uint8_t scanAddress(uint8_t *addrBuf, uint8_t bufLen, uint8_t startAddr = 1, uint8_t endAddr = 32);
 ```
 
+## 示例
+
+* `singleMotorControl`：初始化单个电机并进行正反转速度控制。
+* `dualMotorControl`：初始化两个级联电机，并在同一总线上控制。
+* `addressScan`：扫描 Modbus-RTU 总线并打印发现的电机地址。
+
 ## 兼容性
 
 MCU                | Work Well    |   Work Wrong    | Untested    | Remarks
