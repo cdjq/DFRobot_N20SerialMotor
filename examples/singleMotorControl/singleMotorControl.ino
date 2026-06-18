@@ -1,8 +1,8 @@
 /*!
  * @file singleMotorControl.ino
- * @brief Single DFR1277 motor control demo.
+ * @brief Single motor control demo.
  * @details Demo for initializing one serial motor module and driving forward/backward.
- * @copyright Copyright (c) 2025 DFRobot Co.Ltd (http://www.dfrobot.com)
+ * @copyright Copyright (c) 2026 DFRobot Co.Ltd (http://www.dfrobot.com)
  * @license The MIT License (MIT)
  * @author JiaLi(zhixin.liu@dfrobot.com)
  * @version V1.0.0
@@ -11,6 +11,10 @@
  */
 
 #include "DFRobot_N20SerialMotor.h"
+
+#if defined(ESP8266) || defined(ARDUINO_AVR_UNO)
+#include <SoftwareSerial.h>
+#endif
 
 /* ---------------------------------------------------------------------------------------------------------------------
   *    board   |             MCU                | Leonardo/Mega2560/M0 |    UNO    | ESP8266 | ESP32 |  microbit  |   m0  |
@@ -21,18 +25,30 @@
   * ----------------------------------------------------------------------------------------------------------------------*/
 /* Baud rate can be changed */
 
+#define MOTOR_ADDR 1
+#define MOTOR_BAUD 9600
+
 #if defined(ESP8266) || defined(ARDUINO_AVR_UNO)
 SoftwareSerial n20Serial(4, 5);
-DFRobot_N20SerialMotor motor(1, &n20Serial, 9600);
+DFRobot_N20SerialMotor motor(MOTOR_ADDR, &n20Serial);
 #elif defined(ESP32)
-DFRobot_N20SerialMotor motor(1, &Serial1, 9600, /*D2*/ D2, /*D3*/ D3);
+DFRobot_N20SerialMotor motor(MOTOR_ADDR, &Serial1);
 #else
-DFRobot_N20SerialMotor motor(1, &Serial1, 9600);
+DFRobot_N20SerialMotor motor(MOTOR_ADDR, &Serial1);
 #endif
 
 void setup()
 {
   Serial.begin(115200);
+
+#if defined(ESP8266) || defined(ARDUINO_AVR_UNO)
+  n20Serial.begin(MOTOR_BAUD);
+#elif defined(ESP32)
+  Serial1.begin(MOTOR_BAUD, SERIAL_8N1, /*D2*/ D2, /*D3*/ D3);
+#else
+  Serial1.begin(MOTOR_BAUD);
+#endif
+
   delay(1000);
 
   Serial.println();
@@ -66,7 +82,7 @@ void loop()
   delay(2000);
 
   Serial.println(F("-> Stop"));
-  motor.stop();
+  motor.setSpeed(0);
   delay(1500);
 
   Serial.println();

@@ -1,7 +1,7 @@
 /*!
  * @file DFRobot_N20SerialMotor.cpp
- * @brief Implementation for DFR1277 serial N20 motor driver.
- * @copyright Copyright (c) 2025 DFRobot Co.Ltd (http://www.dfrobot.com)
+ * @brief Implementation for serial N20 motor driver.
+ * @copyright Copyright (c) 2026 DFRobot Co.Ltd (http://www.dfrobot.com)
  * @license The MIT License (MIT)
  * @author JiaLi(zhixin.liu@dfrobot.com)
  * @version V1.0.0
@@ -15,47 +15,10 @@ DFRobot_N20SerialMotor::DFRobot_N20SerialMotor(uint8_t addr, Stream *s) : DFRobo
 {
   _s = s;
   _addr = addr;
-  _baud = 0;
-  _autoBegin = false;
-  _serial = NULL;
-#if !defined(ESP8266) && !defined(ARDUINO_AVR_UNO)
-  _rxpin = 0;
-  _txpin = 0;
-#endif
 }
-
-#if defined(ESP8266) || defined(ARDUINO_AVR_UNO)
-DFRobot_N20SerialMotor::DFRobot_N20SerialMotor(uint8_t addr, SoftwareSerial *sSerial, uint32_t baud) : DFRobot_RTU(sSerial)
-{
-  _s = sSerial;
-  _addr = addr;
-  _serial = sSerial;
-  _baud = baud;
-  _autoBegin = true;
-}
-#else
-DFRobot_N20SerialMotor::DFRobot_N20SerialMotor(uint8_t addr, HardwareSerial *hSerial, uint32_t baud, uint8_t rxpin, uint8_t txpin) : DFRobot_RTU(hSerial)
-{
-  _s = hSerial;
-  _addr = addr;
-  _serial = hSerial;
-  _baud = baud;
-  _rxpin = rxpin;
-  _txpin = txpin;
-  _autoBegin = true;
-}
-#endif
 
 int8_t DFRobot_N20SerialMotor::begin(void)
 {
-  if (_autoBegin && _serial != NULL) {
-#if defined(ESP32)
-    _serial->begin(_baud, SERIAL_8N1, _rxpin, _txpin);
-#else
-    _serial->begin(_baud);
-#endif
-  }
-
   setTimeoutTimeMs(200);
   if (_addr < N20SERIAL_ADDR_MIN || _addr > N20SERIAL_ADDR_MAX) {
     return -1;
@@ -93,11 +56,6 @@ int8_t DFRobot_N20SerialMotor::setSpeed(int16_t speed)
     return -1;
   }
   return 0;
-}
-
-int8_t DFRobot_N20SerialMotor::stop(void)
-{
-  return setSpeed(0);
 }
 
 int8_t DFRobot_N20SerialMotor::setDeviceAddr(uint8_t addr)
@@ -145,7 +103,7 @@ sDeviceInfo_t DFRobot_N20SerialMotor::getDeviceInfo(void)
   return info;
 }
 
-uint8_t DFRobot_N20SerialMotor::scan(uint8_t *addrBuf, uint8_t bufLen, uint8_t startAddr, uint8_t endAddr)
+uint8_t DFRobot_N20SerialMotor::scanAddress(uint8_t *addrBuf, uint8_t bufLen, uint8_t startAddr, uint8_t endAddr)
 {
   uint8_t count = 0;
   uint8_t addr = 0;

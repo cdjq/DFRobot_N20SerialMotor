@@ -4,9 +4,9 @@
 
 * [English Version](./README.md)
 
-DFRobot_N20SerialMotor Python 是用于树莓派平台的 DFR1277 串口 N20 电机 Modbus-RTU 驱动库。
+N20 电机驱动模块的树莓派 Python 库，基于 Modbus-RTU 协议，可实现电机速度控制、地址配置、串口参数配置和多设备级联扫描。
 
-## 产品链接 ()
+## 产品链接 (https://www.dfrobot.com)
     SKU: DFR1277
 
 ## 目录
@@ -20,11 +20,11 @@ DFRobot_N20SerialMotor Python 是用于树莓派平台的 DFR1277 串口 N20 电
 
 ## 概述
 
-* 打开串口并初始化模块通讯<br/>
-* 设置速度并停止电机<br/>
+* 使用已打开的串口校验模块通讯<br/>
+* 设置电机速度（`-255~255`，0 停止电机）<br/>
 * 设置和读取从机地址<br/>
 * 配置波特率<br/>
-* 恢复出厂设置，默认参数重新上电后生效<br/>
+* 恢复出厂设置（UART 参数和设备地址），默认参数重新上电后生效<br/>
 * 读取 VID/PID/版本并扫描设备地址
 
 ## 安装
@@ -32,7 +32,7 @@ DFRobot_N20SerialMotor Python 是用于树莓派平台的 DFR1277 串口 N20 电
 安装依赖：
 
 ```bash
-pip3 install modbus_tk
+pip3 install modbus_tk pyserial
 ```
 
 将 `DFRobot_N20SerialMotor.py` 和示例目录拷贝到树莓派项目中即可使用。
@@ -41,37 +41,30 @@ pip3 install modbus_tk
 
 ```python
 
-  def __init__(self, port, slave_addr=1, baudrate=9600, bus=None):
+  def __init__(self, ser=None, slave_addr=1, bus=None):
     '''!
       @brief 构造函数。
-      @param port 串口名称，如 "/dev/ttyAMA0"。
+      @param ser 已打开的串口对象。未指定 bus 时必须提供。
       @param slave_addr Modbus 从机地址。
-      @param baudrate 主机串口波特率。
       @param bus 共享同一串口总线的另一个实例。
     '''
 
   def begin(self):
     '''!
       @brief 在已打开的串口上检测目标设备。
-      @return int 成功返回 0，失败返回 -1。
+      @return bool 成功返回 True，失败返回 False。
     '''
 
   def close(self):
     '''!
-      @brief 关闭串口。
+      @brief 关闭本实例拥有的 Modbus master。
     '''
 
   def set_speed(self, speed):
     '''!
       @brief 设置电机速度。
-      @param speed 范围：-255~255，符号控制方向。
-      @return bool 成功返回 True。
-    '''
-
-  def stop(self):
-    '''!
-      @brief 停止电机。
-      @return bool 成功返回 True。
+      @param speed 范围：-255~255，符号控制方向。0 停止电机。
+      @return bool 成功返回 True，失败返回 False。
     '''
 
   def set_device_addr(self, addr):
@@ -81,12 +74,12 @@ pip3 install modbus_tk
       @n     新地址在模块重新上电后生效。
       @n     本方法不会更新内部通讯地址；
       @n     模块重启后请使用新地址重新创建对象。
-      @return bool 成功返回 True。
+      @return bool 成功返回 True，失败返回 False。
     '''
 
   def set_baudrate(self, baud_code):
     '''!
-      @brief 配置波特率。
+      @brief 配置波特率，仅可修改波特率，不可修改停止位和校验位。
       @param baud_code 波特率代码。
       @n     BAUD_2400
       @n     BAUD_4800
@@ -98,14 +91,15 @@ pip3 install modbus_tk
       @n     BAUD_115200
       @n     新波特率在模块重新上电后生效。
       @n     本方法不会更新主机串口波特率；
-      @n     模块重启后请使用新波特率重新创建对象。
-      @return bool 成功返回 True。
+      @n     模块重启后请使用新波特率重新打开串口。
+      @return bool 成功返回 True，失败返回 False。
     '''
 
   def restore_factory(self):
     '''!
-      @brief 恢复模块出厂设置。
-      @return bool 成功返回 True。默认参数在模块重新上电后生效。
+      @brief 恢复出厂设置，主要将 UART 参数和设备地址恢复为默认值。
+      @n     默认参数在模块重新上电后生效。
+      @return bool 成功返回 True，失败返回 False。
     '''
 
   def get_device_info(self):
@@ -114,7 +108,7 @@ pip3 install modbus_tk
       @return tuple (vid, pid, version)。
     '''
 
-  def scan(self, start_addr=1, end_addr=247):
+  def scan_address(self, start_addr=1, end_addr=247):
     '''!
       @brief 扫描总线地址。
       @param start_addr 扫描起始地址。

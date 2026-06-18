@@ -14,12 +14,11 @@ DFRobot_N20SerialMotor  KEYWORD1
 
 begin           KEYWORD2
 setSpeed        KEYWORD2
-stop            KEYWORD2
 setDeviceAddr   KEYWORD2
 setBaudrate     KEYWORD2
 restoreFactory   KEYWORD2
 getDeviceInfo   KEYWORD2
-scan            KEYWORD2
+scanAddress     KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

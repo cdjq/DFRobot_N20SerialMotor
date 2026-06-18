@@ -1,7 +1,7 @@
 /*!
  * @file DFRobot_N20SerialMotor.h
- * @brief Arduino library for DFR1277 serial N20 motor driver.
- * @copyright Copyright (c) 2025 DFRobot Co.Ltd (http://www.dfrobot.com)
+ * @brief Arduino library for serial N20 motor driver.
+ * @copyright Copyright (c) 2026 DFRobot Co.Ltd (http://www.dfrobot.com)
  * @license The MIT License (MIT)
  * @author JiaLi(zhixin.liu@dfrobot.com)
  * @version V1.0.0
@@ -14,12 +14,6 @@
 
 #include "Arduino.h"
 #include "DFRobot_RTU.h"
-
-#if defined(ESP8266) || defined(ARDUINO_AVR_UNO)
-#include <SoftwareSerial.h>
-#else
-#include <HardwareSerial.h>
-#endif
 
 #define N20SERIAL_BROADCAST_ADDR      0x00
 #define N20SERIAL_DEVICE_VID          0x3343
@@ -79,15 +73,10 @@ public:
 
   DFRobot_N20SerialMotor(uint8_t addr, Stream *s);
 
-#if defined(ESP8266) || defined(ARDUINO_AVR_UNO)
-  DFRobot_N20SerialMotor(uint8_t addr, SoftwareSerial *sSerial, uint32_t baud);
-#else
-  DFRobot_N20SerialMotor(uint8_t addr, HardwareSerial *hSerial, uint32_t baud, uint8_t rxpin = 0, uint8_t txpin = 0);
-#endif
-
   /**
    * @fn begin
-   * @brief Initialize serial motor object and verify device at current address.
+   * @brief Verify device at current address.
+   * @n     Initialize the serial port in user sketch before calling this function.
    * @return int8_t
    * @retval 0 success
    * @retval -1 failed
@@ -105,15 +94,6 @@ public:
   int8_t setSpeed(int16_t speed);
 
   /**
-   * @fn stop
-   * @brief Stop motor (equivalent to setSpeed(0)).
-   * @return int8_t
-   * @retval 0 success
-   * @retval -1 failed
-   */
-  int8_t stop(void);
-
-  /**
    * @fn setDeviceAddr
    * @brief Set module device address.
    * @param addr Address range: 1~247.
@@ -128,7 +108,7 @@ public:
 
   /**
    * @fn setBaudrate
-   * @brief Configure baudrate.
+   * @brief Configure baudrate, Only the baud rate can be modified, and the stop bit and check bit cannot be modified.
    * @param baud Baudrate code.
    * @n     eBaud2400
    * @n     eBaud4800
@@ -140,7 +120,7 @@ public:
    * @n     eBaud115200
    * @n     The new baudrate takes effect after the module is powered on again.
    * @n     This function does not update the host serial baudrate;
-   * @n     recreate the object with the new baudrate after the module restarts.
+   * @n     reinitialize the serial port with the new baudrate after the module restarts.
    * @return int8_t
    * @retval 0 success
    * @retval -1 failed
@@ -149,7 +129,7 @@ public:
 
   /**
    * @fn restoreFactory
-   * @brief Restore factory settings stored in the module.
+   * @brief Restoring factory Settings mainly involves setting the uart and device addresses back to their default values
    * @n     Factory settings take effect after the module is powered on again.
    * @return int8_t
    * @retval 0 success
@@ -168,7 +148,7 @@ public:
   sDeviceInfo_t getDeviceInfo(void);
 
   /**
-   * @fn scan
+   * @fn scanAddress
    * @brief Scan slave addresses on current bus.
    * @param addrBuf Output address array.
    * @param bufLen Max items that can be stored in addrBuf.
@@ -176,7 +156,7 @@ public:
    * @param endAddr End address of scan range.
    * @return uint8_t Number of discovered devices.
    */
-  uint8_t scan(uint8_t *addrBuf, uint8_t bufLen, uint8_t startAddr = N20SERIAL_ADDR_MIN, uint8_t endAddr = N20SERIAL_ADDR_MAX);
+  uint8_t scanAddress(uint8_t *addrBuf, uint8_t bufLen, uint8_t startAddr = N20SERIAL_ADDR_MIN, uint8_t endAddr = N20SERIAL_ADDR_MAX);
 
 protected:
   bool detectDeviceAddress(uint8_t addr);
@@ -187,15 +167,6 @@ protected:
 
   Stream *_s;
   uint8_t _addr;
-  uint32_t _baud;
-  bool _autoBegin;
-#if defined(ESP8266) || defined(ARDUINO_AVR_UNO)
-  SoftwareSerial *_serial;
-#else
-  HardwareSerial *_serial;
-  uint8_t _rxpin;
-  uint8_t _txpin;
-#endif
 };
 
 #endif

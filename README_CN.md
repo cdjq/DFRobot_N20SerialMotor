@@ -4,11 +4,11 @@
 
 * [English Version](./README.md)
 
-DFRobot_N20SerialMotor 是 DFR1277 串口 N20 电机驱动模块的 Arduino 库，基于 Modbus-RTU 协议，可实现电机速度控制、地址配置、串口参数配置和多设备级联扫描。
+N20 电机驱动模块的 Arduino 库，基于 Modbus-RTU 协议，可实现电机速度控制、地址配置、串口参数配置和多设备级联扫描。
 
 ![产品图片]
 
-## 产品链接 ()
+## 产品链接 (https://www.dfrobot.com)
     SKU: DFR1277
 
 ## 目录
@@ -23,11 +23,11 @@ DFRobot_N20SerialMotor 是 DFR1277 串口 N20 电机驱动模块的 Arduino 库�
 
 ## 概述
 
-* 初始化模块并校验 Modbus-RTU 通讯<br/>
-* 设置电机速度（`-255~255`）并支持快速停止<br/>
+* 校验模块 Modbus-RTU 通讯<br/>
+* 设置电机速度（`-255~255`，0 停止电机）<br/>
 * 配置从机地址（`1~247`），重新上电后生效<br/>
 * 配置波特率，重新上电后生效<br/>
-* 恢复出厂设置，默认参数重新上电后生效<br/>
+* 恢复出厂设置（UART 参数和设备地址），默认参数重新上电后生效<br/>
 * 读取 VID/PID/版本并扫描总线设备
 
 ## 库安装
@@ -50,7 +50,8 @@ DFRobot_N20SerialMotor 是 DFR1277 串口 N20 电机驱动模块的 Arduino 库�
 
   /**
    * @fn begin
-   * @brief 初始化串口电机对象并校验当前地址设备。
+   * @brief 校验当前地址设备。
+   * @n     调用本函数前，请先在用户程序中初始化串口。
    * @return int8_t
    * @retval 0 成功
    * @retval -1 失败
@@ -68,15 +69,6 @@ DFRobot_N20SerialMotor 是 DFR1277 串口 N20 电机驱动模块的 Arduino 库�
   int8_t setSpeed(int16_t speed);
 
   /**
-   * @fn stop
-   * @brief 停止电机（等效于 setSpeed(0)）。
-   * @return int8_t
-   * @retval 0 成功
-   * @retval -1 失败
-   */
-  int8_t stop(void);
-
-  /**
    * @fn setDeviceAddr
    * @brief 设置模块设备地址。
    * @param addr 地址范围：1~247。
@@ -91,7 +83,7 @@ DFRobot_N20SerialMotor 是 DFR1277 串口 N20 电机驱动模块的 Arduino 库�
 
   /**
    * @fn setBaudrate
-   * @brief 配置波特率。
+   * @brief 配置波特率，仅可修改波特率，不可修改停止位和校验位。
    * @param baud 波特率代码。
    * @n     eBaud2400
    * @n     eBaud4800
@@ -103,7 +95,7 @@ DFRobot_N20SerialMotor 是 DFR1277 串口 N20 电机驱动模块的 Arduino 库�
    * @n     eBaud115200
    * @n     新波特率在模块重新上电后生效。
    * @n     本函数不会更新主机串口波特率；
-   * @n     模块重启后请使用新波特率重新创建对象。
+   * @n     模块重启后请使用新波特率重新初始化串口。
    * @return int8_t
    * @retval 0 成功
    * @retval -1 失败
@@ -112,7 +104,7 @@ DFRobot_N20SerialMotor 是 DFR1277 串口 N20 电机驱动模块的 Arduino 库�
 
   /**
    * @fn restoreFactory
-   * @brief 恢复模块出厂设置。
+   * @brief 恢复出厂设置，主要将 UART 参数和设备地址恢复为默认值。
    * @n     默认参数在模块重新上电后生效。
    * @return int8_t
    * @retval 0 成功
@@ -131,7 +123,7 @@ DFRobot_N20SerialMotor 是 DFR1277 串口 N20 电机驱动模块的 Arduino 库�
   sDeviceInfo_t getDeviceInfo(void);
 
   /**
-   * @fn scan
+   * @fn scanAddress
    * @brief 扫描总线上在线设备地址。
    * @param addrBuf 输出地址数组。
    * @param bufLen addrBuf 最大可存储数量。
@@ -139,7 +131,7 @@ DFRobot_N20SerialMotor 是 DFR1277 串口 N20 电机驱动模块的 Arduino 库�
    * @param endAddr 扫描结束地址。
    * @return uint8_t 发现的设备数量。
    */
-  uint8_t scan(uint8_t *addrBuf, uint8_t bufLen, uint8_t startAddr = 1, uint8_t endAddr = 32);
+  uint8_t scanAddress(uint8_t *addrBuf, uint8_t bufLen, uint8_t startAddr = 1, uint8_t endAddr = 32);
 ```
 
 ## 兼容性

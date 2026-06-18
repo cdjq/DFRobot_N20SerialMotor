@@ -1,7 +1,7 @@
 '''!
   @file DFRobot_N20SerialMotor.py
-  @brief Raspberry Pi Modbus-RTU driver for DFR1277 serial N20 motor module.
-  @copyright Copyright (c) 2025 DFRobot Co.Ltd (http://www.dfrobot.com)
+  @brief Raspberry Pi Modbus-RTU driver for serial N20 motor module.
+  @copyright Copyright (c) 2026 DFRobot Co.Ltd (http://www.dfrobot.com)
   @license The MIT License (MIT)
   @author JiaLi(zhixin.liu@dfrobot.com)
   @version V1.0.0
@@ -9,7 +9,6 @@
   @url https://github.com/DFRobot/DFRobot_N20SerialMotor
 '''
 
-import serial
 import time
 
 import modbus_tk.defines as cst
@@ -52,55 +51,51 @@ class DFRobot_N20SerialMotor:
   STATE_REVERSE = 2
   STATE_UNKNOWN = 0xFFFF
 
-  def __init__(self, port, slave_addr=1, baudrate=9600, bus=None, debug=False):
+  def __init__(self, ser=None, slave_addr=1, bus=None):
     '''!
       @brief Constructor.
-      @param port Serial port name, e.g. "/dev/ttyAMA0".
+      @param ser Opened serial port object. Required when bus is None.
       @param slave_addr Modbus slave address.
-      @param baudrate Host serial baudrate.
       @param bus Another DFRobot_N20SerialMotor instance to share the serial bus with.
-      @param debug Print Modbus debug information.
     '''
     self._slave_addr = slave_addr
-    self._owns_serial = False
+    self._owns_master = False
     self._ser = None
-    self._debug = debug
+    self._debug = False
 
     if bus is not None:
       self.master = bus.master
       self._ser = bus._ser
-      if debug:
-        self._debug = True
     else:
-      self._ser = serial.Serial(port=port, baudrate=baudrate, bytesize=8, parity='N', stopbits=1)
-      self._ser.reset_input_buffer()
-      self._ser.reset_output_buffer()
+      if ser is None:
+        raise ValueError("ser is required when bus is not provided")
+      self._ser = ser
       self.master = modbus_rtu.RtuMaster(self._ser)
       self.master.set_timeout(1.0)
-      self._owns_serial = True
+      self._owns_master = True
 
   def begin(self):
     '''!
       @brief Verify device at current address.
-      @return int 0 on success, -1 on failure.
+      @return bool True on success, False on failure.
     '''
     if self._slave_addr < self.ADDR_MIN or self._slave_addr > self.ADDR_MAX:
-      return -1
+      return False
 
     time.sleep(0.5)
 
     for _ in range(3):
       if self._detect_device_address(self._slave_addr):
-        return 0
+        return True
       time.sleep(0.1)
 
-    return -1
+    return False
 
   def close(self):
     '''!
-      @brief Close serial port owned by this instance.
+      @brief Close Modbus master owned by this instance.
     '''
-    if self._owns_serial and self.master is not None:
+    if self._owns_master and self.master is not None:
       self.master.close()
       self._ser = None
     self.master = None
@@ -109,7 +104,7 @@ class DFRobot_N20SerialMotor:
     '''!
       @brief Set motor speed.
       @param speed Range: -255~255. 0 stops the motor.
-      @return bool True on success.
+      @return bool True on success, False on failure.
     '''
     if speed > 255:
       speed = 255
@@ -121,18 +116,11 @@ class DFRobot_N20SerialMotor:
       return False
     return True
 
-  def stop(self):
-    '''!
-      @brief Stop motor (equivalent to set_speed(0)).
-      @return bool True on success.
-    '''
-    return self.set_speed(0)
-
   def set_device_addr(self, addr):
     '''!
       @brief Set module device address.
       @param addr Address range: 1~247.
-      @return bool True on success.
+      @return bool True on success, False on failure.
     '''
     if addr < self.ADDR_MIN or addr > self.ADDR_MAX:
       return False
@@ -143,9 +131,20 @@ class DFRobot_N20SerialMotor:
 
   def set_baudrate(self, baud_code):
     '''!
-      @brief Configure baudrate.
+      @brief Configure baudrate, Only the baud rate can be modified, and the stop bit and check bit cannot be modified.
       @param baud_code Baudrate code.
-      @return bool True on success.
+      @n     BAUD_2400
+      @n     BAUD_4800
+      @n     BAUD_9600
+      @n     BAUD_14400
+      @n     BAUD_19200
+      @n     BAUD_38400
+      @n     BAUD_57600
+      @n     BAUD_115200
+      @n     The new baudrate takes effect after the module is powered on again.
+      @n     This method does not update the host serial baudrate;
+      @n     reopen the serial port with the new baudrate after the module restarts.
+      @return bool True on success, False on failure.
     '''
     if not self._write_reg(self._slave_addr, self.HOLDINGREG_BAUDRATE, baud_code):
       return False
@@ -154,8 +153,9 @@ class DFRobot_N20SerialMotor:
 
   def restore_factory(self):
     '''!
-      @brief Restore factory settings stored in the module.
-      @return bool True on success.
+      @brief Restoring factory Settings mainly involves setting the uart and device addresses back to their default values.
+      @n     Factory settings take effect after the module is powered on again.
+      @return bool True on success, False on failure.
     '''
     if not self._write_reg(self._slave_addr, self.HOLDINGREG_RESET, self.FACTORY_RESET_VALUE):
       return False
@@ -173,7 +173,7 @@ class DFRobot_N20SerialMotor:
       self._read_reg16_compat(self._slave_addr, self.INPUTREG_VERSION)
     )
 
-  def scan(self, start_addr=ADDR_MIN, end_addr=ADDR_MAX, max_count=None):
+  def scan_address(self, start_addr=ADDR_MIN, end_addr=ADDR_MAX, max_count=None):
     '''!
       @brief Scan slave addresses on current bus.
       @return list Detected address list.
@@ -329,7 +329,7 @@ class DFRobot_N20SerialMotor:
   def _write_reg(self, dev_addr, reg, value):
     '''!
       @brief Write holding register (FC 0x06), same as DFRobot_RTU writeHoldingRegister().
-      @return bool True on success.
+      @return bool True on success, False on failure.
     '''
     value &= 0xFFFF
     self._ser.reset_input_buffer()

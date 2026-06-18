@@ -4,9 +4,9 @@
 
 * [中文版](./README_CN.md)
 
-DFRobot_N20SerialMotor Python is a Raspberry Pi Modbus-RTU driver for DFR1277 serial N20 motor module.
+Raspberry Pi Python library for the N20 motor driver module. Based on the Modbus-RTU protocol, it supports motor speed control, address configuration, serial parameter configuration, and multi-device cascade scanning.
 
-## Product Link ()
+## Product Link (https://www.dfrobot.com)
     SKU: DFR1277
 
 ## Table of Contents
@@ -20,11 +20,11 @@ DFRobot_N20SerialMotor Python is a Raspberry Pi Modbus-RTU driver for DFR1277 se
 
 ## Summary
 
-* Open serial port and initialize module communication<br/>
-* Set speed and stop motor<br/>
+* Use an opened serial port to verify module communication<br/>
+* Set motor speed (`-255~255`, 0 stops the motor)<br/>
 * Set/read slave address<br/>
 * Configure baudrate<br/>
-* Restore factory settings; defaults take effect after power-on again<br/>
+* Restore factory settings (UART and device address); defaults take effect after power-on again<br/>
 * Read module VID/PID/version and scan addresses
 
 ## Installation
@@ -32,7 +32,7 @@ DFRobot_N20SerialMotor Python is a Raspberry Pi Modbus-RTU driver for DFR1277 se
 Install dependency:
 
 ```bash
-pip3 install modbus_tk
+pip3 install modbus_tk pyserial
 ```
 
 Copy `DFRobot_N20SerialMotor.py` and example folder to your Raspberry Pi project.
@@ -41,37 +41,30 @@ Copy `DFRobot_N20SerialMotor.py` and example folder to your Raspberry Pi project
 
 ```python
 
-  def __init__(self, port, slave_addr=1, baudrate=9600, bus=None):
+  def __init__(self, ser=None, slave_addr=1, bus=None):
     '''!
       @brief Constructor.
-      @param port Serial port name, e.g. "/dev/ttyAMA0".
+      @param ser Opened serial port object. Required when bus is None.
       @param slave_addr Modbus slave address.
-      @param baudrate Host serial baudrate.
       @param bus Another instance to share the serial bus with.
     '''
 
   def begin(self):
     '''!
       @brief Verify target device on the opened serial port.
-      @return int 0 on success, -1 on failure.
+      @return bool True on success, False on failure.
     '''
 
   def close(self):
     '''!
-      @brief Close serial port.
+      @brief Close Modbus master owned by this instance.
     '''
 
   def set_speed(self, speed):
     '''!
       @brief Set motor speed.
-      @param speed Range: -255~255, sign controls direction.
-      @return bool True on success.
-    '''
-
-  def stop(self):
-    '''!
-      @brief Stop motor.
-      @return bool True on success.
+      @param speed Range: -255~255, sign controls direction. 0 stops the motor.
+      @return bool True on success, False on failure.
     '''
 
   def set_device_addr(self, addr):
@@ -81,12 +74,12 @@ Copy `DFRobot_N20SerialMotor.py` and example folder to your Raspberry Pi project
       @n     The new address takes effect after the module is powered on again.
       @n     This method does not update the internal communication address;
       @n     recreate the object with the new address after the module restarts.
-      @return bool True on success.
+      @return bool True on success, False on failure.
     '''
 
   def set_baudrate(self, baud_code):
     '''!
-      @brief Configure baudrate.
+      @brief Configure baudrate, Only the baud rate can be modified, and the stop bit and check bit cannot be modified.
       @param baud_code Baudrate code.
       @n     BAUD_2400
       @n     BAUD_4800
@@ -98,14 +91,15 @@ Copy `DFRobot_N20SerialMotor.py` and example folder to your Raspberry Pi project
       @n     BAUD_115200
       @n     The new baudrate takes effect after the module is powered on again.
       @n     This method does not update the host serial baudrate;
-      @n     recreate the object with the new baudrate after the module restarts.
-      @return bool True on success.
+      @n     reopen the serial port with the new baudrate after the module restarts.
+      @return bool True on success, False on failure.
     '''
 
   def restore_factory(self):
     '''!
-      @brief Restore factory settings stored in the module.
-      @return bool True on success. Factory settings take effect after power-on again.
+      @brief Restoring factory Settings mainly involves setting the uart and device addresses back to their default values.
+      @n     Factory settings take effect after the module is powered on again.
+      @return bool True on success, False on failure.
     '''
 
   def get_device_info(self):
@@ -114,7 +108,7 @@ Copy `DFRobot_N20SerialMotor.py` and example folder to your Raspberry Pi project
       @return tuple (vid, pid, version).
     '''
 
-  def scan(self, start_addr=1, end_addr=247):
+  def scan_address(self, start_addr=1, end_addr=247):
     '''!
       @brief Scan bus addresses.
       @param start_addr Start address of scan range.

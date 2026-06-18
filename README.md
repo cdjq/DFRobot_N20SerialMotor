@@ -4,11 +4,11 @@
 
 * [中文版](./README_CN.md)
 
-DFRobot_N20SerialMotor is an Arduino library for DFR1277 Modbus-RTU serial N20 motor driver. It supports speed control, address configuration, UART parameter configuration, and multi-device scan on one bus.
+Arduino library for the N20 motor driver module. Based on the Modbus-RTU protocol, it supports motor speed control, address configuration, serial parameter configuration, and multi-device cascade scanning.
 
 ![product image]
 
-## Product Link ()
+## Product Link (https://www.dfrobot.com)
     SKU: DFR1277
 
 ## Table of Contents
@@ -23,11 +23,11 @@ DFRobot_N20SerialMotor is an Arduino library for DFR1277 Modbus-RTU serial N20 m
 
 ## Summary
 
-* Initialize module and verify communication by Modbus-RTU<br/>
-* Set motor speed (`-255~255`) and stop quickly<br/>
+* Verify module communication by Modbus-RTU<br/>
+* Set motor speed (`-255~255`, 0 stops the motor)<br/>
 * Configure slave address (`1~247`); takes effect after power-on again<br/>
 * Configure baudrate; takes effect after power-on again<br/>
-* Restore factory settings; defaults take effect after power-on again<br/>
+* Restore factory settings (UART and device address); defaults take effect after power-on again<br/>
 * Read VID/PID/version and scan cascaded devices
 
 ## Installation
@@ -50,7 +50,8 @@ Copy both folders into `Arduino/libraries`, then open examples and run.
 
   /**
    * @fn begin
-   * @brief Initialize serial motor object and verify device at current address.
+   * @brief Verify device at current address.
+   * @n     Initialize the serial port in user sketch before calling this function.
    * @return int8_t
    * @retval 0 success
    * @retval -1 failed
@@ -68,15 +69,6 @@ Copy both folders into `Arduino/libraries`, then open examples and run.
   int8_t setSpeed(int16_t speed);
 
   /**
-   * @fn stop
-   * @brief Stop motor (equivalent to setSpeed(0)).
-   * @return int8_t
-   * @retval 0 success
-   * @retval -1 failed
-   */
-  int8_t stop(void);
-
-  /**
    * @fn setDeviceAddr
    * @brief Set module device address.
    * @param addr Address range: 1~247.
@@ -91,7 +83,7 @@ Copy both folders into `Arduino/libraries`, then open examples and run.
 
   /**
    * @fn setBaudrate
-   * @brief Configure baudrate.
+   * @brief Configure baudrate, Only the baud rate can be modified, and the stop bit and check bit cannot be modified.
    * @param baud Baudrate code.
    * @n     eBaud2400
    * @n     eBaud4800
@@ -103,7 +95,7 @@ Copy both folders into `Arduino/libraries`, then open examples and run.
    * @n     eBaud115200
    * @n     The new baudrate takes effect after the module is powered on again.
    * @n     This function does not update the host serial baudrate;
-   * @n     recreate the object with the new baudrate after the module restarts.
+   * @n     reinitialize the serial port with the new baudrate after the module restarts.
    * @return int8_t
    * @retval 0 success
    * @retval -1 failed
@@ -112,7 +104,7 @@ Copy both folders into `Arduino/libraries`, then open examples and run.
 
   /**
    * @fn restoreFactory
-   * @brief Restore factory settings stored in the module.
+   * @brief Restoring factory Settings mainly involves setting the uart and device addresses back to their default values
    * @n     Factory settings take effect after the module is powered on again.
    * @return int8_t
    * @retval 0 success
@@ -131,7 +123,7 @@ Copy both folders into `Arduino/libraries`, then open examples and run.
   sDeviceInfo_t getDeviceInfo(void);
 
   /**
-   * @fn scan
+   * @fn scanAddress
    * @brief Scan slave addresses on current bus.
    * @param addrBuf Output address array.
    * @param bufLen Max items that can be stored in addrBuf.
@@ -139,7 +131,7 @@ Copy both folders into `Arduino/libraries`, then open examples and run.
    * @param endAddr End address of scan range.
    * @return uint8_t Number of discovered devices.
    */
-  uint8_t scan(uint8_t *addrBuf, uint8_t bufLen, uint8_t startAddr = 1, uint8_t endAddr = 32);
+  uint8_t scanAddress(uint8_t *addrBuf, uint8_t bufLen, uint8_t startAddr = 1, uint8_t endAddr = 32);
 ```
 
 ## Compatibility

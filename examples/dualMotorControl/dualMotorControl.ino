@@ -1,8 +1,8 @@
 /*!
  * @file dualMotorControl.ino
- * @brief Two DFR1277 motors control demo.
+ * @brief Two motors control demo.
  * @details Scan bus addresses and control 2 cascaded motors by Modbus-RTU.
- * @copyright Copyright (c) 2025 DFRobot Co.Ltd (http://www.dfrobot.com)
+ * @copyright Copyright (c) 2026 DFRobot Co.Ltd (http://www.dfrobot.com)
  * @license The MIT License (MIT)
  * @author JiaLi(zhixin.liu@dfrobot.com)
  * @version V1.0.0
@@ -11,6 +11,10 @@
  */
 
 #include "DFRobot_N20SerialMotor.h"
+
+#if defined(ESP8266) || defined(ARDUINO_AVR_UNO)
+#include <SoftwareSerial.h>
+#endif
 
 /* ---------------------------------------------------------------------------------------------------------------------
   *    board   |             MCU                | Leonardo/Mega2560/M0 |    UNO    | ESP8266 | ESP32 |  microbit  |   m0  |
@@ -21,30 +25,57 @@
   * ----------------------------------------------------------------------------------------------------------------------*/
 /* Baud rate can be changed */
 
+#define MOTOR1_ADDR 1
+#define MOTOR2_ADDR 2
+#define MOTOR_BAUD 9600
+
+const uint8_t motorCount = 2;
+
 #if defined(ESP8266) || defined(ARDUINO_AVR_UNO)
 SoftwareSerial n20Serial(4, 5);
 DFRobot_N20SerialMotor motors[] = {
-  DFRobot_N20SerialMotor(1, &n20Serial, 9600),
-  DFRobot_N20SerialMotor(2, &n20Serial, 9600)
+  DFRobot_N20SerialMotor(MOTOR1_ADDR, &n20Serial),
+  DFRobot_N20SerialMotor(MOTOR2_ADDR, &n20Serial)
 };
 #elif defined(ESP32)
 DFRobot_N20SerialMotor motors[] = {
-  DFRobot_N20SerialMotor(1, &Serial1, 9600, /*D2*/ D2, /*D3*/ D3),
-  DFRobot_N20SerialMotor(2, &Serial1, 9600, /*D2*/ D2, /*D3*/ D3)
+  DFRobot_N20SerialMotor(MOTOR1_ADDR, &Serial1),
+  DFRobot_N20SerialMotor(MOTOR2_ADDR, &Serial1)
 };
 #else
 DFRobot_N20SerialMotor motors[] = {
-  DFRobot_N20SerialMotor(1, &Serial1, 9600),
-  DFRobot_N20SerialMotor(2, &Serial1, 9600)
+  DFRobot_N20SerialMotor(MOTOR1_ADDR, &Serial1),
+  DFRobot_N20SerialMotor(MOTOR2_ADDR, &Serial1)
 };
 #endif
-const uint8_t motorCount = sizeof(motors) / sizeof(motors[0]);
+/**
+ * note : The correspondence between motor addresses
+  * 1. Motor1: Address 1
+  * 2. Motor2: Address 2
+  *       ...:...
+  * n. Motorn: Address n
+  *
+  * usge:
+  * 1. Motors[0] is Motor1
+  * 2. Motors[1] is Motor2
+  *       ...:...
+  * n. Motors[n-1] is Motorn
+  */
 
 void setup()
 {
   uint8_t i = 0;
 
   Serial.begin(115200);
+
+#if defined(ESP8266) || defined(ARDUINO_AVR_UNO)
+  n20Serial.begin(MOTOR_BAUD);
+#elif defined(ESP32)
+  Serial1.begin(MOTOR_BAUD, SERIAL_8N1, /*D2*/ D2, /*D3*/ D3);
+#else
+  Serial1.begin(MOTOR_BAUD);
+#endif
+
   delay(1000);
 
   Serial.println();
@@ -53,18 +84,42 @@ void setup()
   Serial.println(F("  Dual Motor Control Example"));
   Serial.println(F("========================================"));
 
+  uint8_t scanBuf[32] = { 0 };
+  uint8_t foundCount = 0;
+  uint8_t j = 0;
+  const uint8_t motorAddrs[] = { MOTOR1_ADDR, MOTOR2_ADDR };
+
   for (i = 0; i < motorCount; i++) {
-    while (motors[i].begin() != 0) {
+    if (motors[i].begin() == 0) {
+      Serial.print(F("[OK] Motor "));
+      Serial.print(i + 1);
+      Serial.print(F(" initialized (Modbus addr: "));
+      Serial.print(motorAddrs[i]);
+      Serial.println(F(")"));
+    } else {
       Serial.print(F("[ERROR] Motor "));
       Serial.print(i + 1);
-      Serial.println(F(" init failed, retrying..."));
-      delay(1000);
+      Serial.println(F(" init failed, scanning bus..."));
+      Serial.println("This might take about 30 seconds. Please be patient and wait.");
+
+      foundCount = motors[0].scanAddress(scanBuf, sizeof(scanBuf));
+      if (foundCount == 0) {
+        Serial.println(F("[SCAN] No device found on bus."));
+      } else {
+        Serial.print(F("[SCAN] Found "));
+        Serial.print(foundCount);
+        Serial.println(F(" device(s), address:"));
+        for (j = 0; j < foundCount; j++) {
+          Serial.print(scanBuf[j]);
+          Serial.print(F(" "));
+        }
+      }
+
+      Serial.println(F("[ERROR] Motor init failed. Please check whether the device address is correct."));
+      while (1) {
+        delay(1000);
+      }
     }
-    Serial.print(F("[OK] Motor "));
-    Serial.print(i + 1);
-    Serial.print(F(" initialized (Modbus addr: "));
-    Serial.print(i + 1);
-    Serial.println(F(")"));
   }
 
   Serial.println(F("All motors ready."));
@@ -85,8 +140,8 @@ void loop()
   delay(2000);
 
   Serial.println(F("-> Both motors stop"));
-  motors[0].stop();
-  motors[1].stop();
+  motors[0].setSpeed(0);
+  motors[1].setSpeed(0);
   delay(1500);
 
   Serial.println();
