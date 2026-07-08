@@ -20,8 +20,8 @@
   *    board   |             MCU                | Leonardo/Mega2560/M0 |    UNO    | ESP8266 | ESP32 |  microbit  |   m0  |
   *     VCC    |              5V                |         5V           |     5V    |    5V   |   5V  |     X      |   5V  |
   *     GND    |              GND               |        GND           |    GND    |   GND   |  GND  |     X      |  GND  |
-  *     RX     |              TX                |     Serial1 TX1      |     4     |   4/D7  | 25/D2 |     X      |  tx1  |
-  *     TX     |              RX                |     Serial1 RX1      |     5     |   5/D6  | 26/D3 |     X      |  rx1  |
+  *     RX     |              TX                |     Serial1 TX1      |     5     |   5/D6  | 25/D2 |     X      |  tx1  |
+  *     TX     |              RX                |     Serial1 RX1      |     4     |   4/D7  | 26/D3 |     X      |  rx1  |
   * ----------------------------------------------------------------------------------------------------------------------*/
 /* Baud rate can be changed */
 
