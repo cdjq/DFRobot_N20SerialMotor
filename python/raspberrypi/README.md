@@ -45,7 +45,7 @@ Copy `DFRobot_N20SerialMotor.py` and example folder to your Raspberry Pi project
     '''!
       @brief Constructor.
       @param ser Opened serial port object. Required when bus is None.
-      @param slave_addr Modbus slave address.
+      @param slave_addr Modbus slave address, range: 1~247.
       @param bus Another instance to share the serial bus with.
     '''
 

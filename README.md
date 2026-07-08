@@ -43,7 +43,7 @@ Copy both folders into `Arduino/libraries`, then open examples and run.
   /**
    * @fn DFRobot_N20SerialMotor
    * @brief Constructor.
-   * @param addr Modbus slave address.
+   * @param addr Modbus slave address, range: 1~247.
    * @param s Stream pointer used for Modbus-RTU communication.
    */
   DFRobot_N20SerialMotor(uint8_t addr, Stream *s);
@@ -131,7 +131,7 @@ Copy both folders into `Arduino/libraries`, then open examples and run.
    * @param endAddr End address of scan range.
    * @return uint8_t Number of discovered devices.
    */
-  uint8_t scanAddress(uint8_t *addrBuf, uint8_t bufLen, uint8_t startAddr = 1, uint8_t endAddr = 32);
+  uint8_t scanAddress(uint8_t *addrBuf, uint8_t bufLen, uint8_t startAddr = 1, uint8_t endAddr = 247);
 ```
 
 ## Examples

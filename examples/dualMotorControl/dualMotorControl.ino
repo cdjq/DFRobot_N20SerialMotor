@@ -84,9 +84,6 @@ void setup()
   Serial.println(F("  Dual Motor Control Example"));
   Serial.println(F("========================================"));
 
-  uint8_t scanBuf[32] = { 0 };
-  uint8_t foundCount = 0;
-  uint8_t j = 0;
   const uint8_t motorAddrs[] = { MOTOR1_ADDR, MOTOR2_ADDR };
 
   for (i = 0; i < motorCount; i++) {

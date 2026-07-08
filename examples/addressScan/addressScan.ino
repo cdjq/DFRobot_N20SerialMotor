@@ -26,9 +26,9 @@
 /* Baud rate and scan range can be changed */
 
 #define MOTOR_BAUD 9600
-#define SCAN_START_ADDR 1
-#define SCAN_END_ADDR 32
-#define SCAN_BUF_LEN 32
+#define SCAN_START_ADDR N20SERIAL_ADDR_MIN
+#define SCAN_END_ADDR N20SERIAL_ADDR_MAX
+#define SCAN_BUF_LEN (N20SERIAL_ADDR_MAX - N20SERIAL_ADDR_MIN + 1)
 
 #if defined(ESP8266) || defined(ARDUINO_AVR_UNO)
 SoftwareSerial n20Serial(4, 5);
@@ -67,7 +67,7 @@ void setup()
   Serial.print(F("~"));
   Serial.println(SCAN_END_ADDR);
   Serial.println(F("[SCAN] Scanning bus..."));
-  Serial.println("Please be patient and wait.");
+  Serial.println(F("Full range scan may take a while. Please be patient and wait."));
 
   foundCount = scanner.scanAddress(scanBuf, sizeof(scanBuf), SCAN_START_ADDR, SCAN_END_ADDR);
 

@@ -45,7 +45,7 @@ pip3 install modbus_tk pyserial
     '''!
       @brief 构造函数。
       @param ser 已打开的串口对象。未指定 bus 时必须提供。
-      @param slave_addr Modbus 从机地址。
+      @param slave_addr Modbus 从机地址，范围：1~247。
       @param bus 共享同一串口总线的另一个实例。
     '''
 

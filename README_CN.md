@@ -43,7 +43,7 @@ N20 电机驱动模块的 Arduino 库，基于 Modbus-RTU 协议，可实现电�
   /**
    * @fn DFRobot_N20SerialMotor
    * @brief 构造函数。
-   * @param addr Modbus 从机地址。
+   * @param addr Modbus 从机地址，范围：1~247。
    * @param s Modbus-RTU 通讯串口对象指针。
    */
   DFRobot_N20SerialMotor(uint8_t addr, Stream *s);
@@ -131,7 +131,7 @@ N20 电机驱动模块的 Arduino 库，基于 Modbus-RTU 协议，可实现电�
    * @param endAddr 扫描结束地址。
    * @return uint8_t 发现的设备数量。
    */
-  uint8_t scanAddress(uint8_t *addrBuf, uint8_t bufLen, uint8_t startAddr = 1, uint8_t endAddr = 32);
+  uint8_t scanAddress(uint8_t *addrBuf, uint8_t bufLen, uint8_t startAddr = 1, uint8_t endAddr = 247);
 ```
 
 ## 示例

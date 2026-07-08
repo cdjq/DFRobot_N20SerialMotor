@@ -71,6 +71,12 @@ typedef struct {
 class DFRobot_N20SerialMotor : public DFRobot_RTU {
 public:
 
+  /**
+   * @fn DFRobot_N20SerialMotor
+   * @brief Constructor.
+   * @param addr Modbus slave address, range: 1~247.
+   * @param s Stream pointer used for Modbus-RTU communication.
+   */
   DFRobot_N20SerialMotor(uint8_t addr, Stream *s);
 
   /**
@@ -152,8 +158,8 @@ public:
    * @brief Scan slave addresses on current bus.
    * @param addrBuf Output address array.
    * @param bufLen Max items that can be stored in addrBuf.
-   * @param startAddr Start address of scan range.
-   * @param endAddr End address of scan range.
+   * @param startAddr Start address of scan range, clamped to 1 if lower.
+   * @param endAddr End address of scan range, clamped to 247 if higher.
    * @return uint8_t Number of discovered devices.
    */
   uint8_t scanAddress(uint8_t *addrBuf, uint8_t bufLen, uint8_t startAddr = N20SERIAL_ADDR_MIN, uint8_t endAddr = N20SERIAL_ADDR_MAX);

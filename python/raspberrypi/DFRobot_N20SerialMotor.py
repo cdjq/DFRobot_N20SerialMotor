@@ -55,7 +55,7 @@ class DFRobot_N20SerialMotor:
     '''!
       @brief Constructor.
       @param ser Opened serial port object. Required when bus is None.
-      @param slave_addr Modbus slave address.
+      @param slave_addr Modbus slave address, range: 1~247.
       @param bus Another DFRobot_N20SerialMotor instance to share the serial bus with.
     '''
     self._slave_addr = slave_addr
@@ -120,6 +120,9 @@ class DFRobot_N20SerialMotor:
     '''!
       @brief Set module device address.
       @param addr Address range: 1~247.
+      @n     The new address takes effect after the module is powered on again.
+      @n     This method does not update the internal communication address;
+      @n     recreate the object with the new address after the module restarts.
       @return bool True on success, False on failure.
     '''
     if addr < self.ADDR_MIN or addr > self.ADDR_MAX:
@@ -176,6 +179,9 @@ class DFRobot_N20SerialMotor:
   def scan_address(self, start_addr=ADDR_MIN, end_addr=ADDR_MAX, max_count=None):
     '''!
       @brief Scan slave addresses on current bus.
+      @param start_addr Start address of scan range, clamped to 1 if lower.
+      @param end_addr End address of scan range, clamped to 247 if higher.
+      @param max_count Max number of detected addresses to return. None means no limit.
       @return list Detected address list.
     '''
     if start_addr < self.ADDR_MIN:

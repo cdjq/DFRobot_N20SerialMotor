@@ -20,8 +20,8 @@ from DFRobot_N20SerialMotor import DFRobot_N20SerialMotor
 
 port = "/dev/ttyAMA0"
 MOTOR_BAUD = 9600
-SCAN_START_ADDR = 1
-SCAN_END_ADDR = 32
+SCAN_START_ADDR = DFRobot_N20SerialMotor.ADDR_MIN
+SCAN_END_ADDR = DFRobot_N20SerialMotor.ADDR_MAX
 
 ser = serial.Serial(port=port, baudrate=MOTOR_BAUD, bytesize=8, parity='N', stopbits=1)
 ser.reset_input_buffer()
@@ -37,7 +37,7 @@ def setup():
   print("========================================")
   print("[SCAN] Range: {}~{}".format(SCAN_START_ADDR, SCAN_END_ADDR))
   print("[SCAN] Scanning bus...")
-  print("Please be patient and wait.")
+  print("Full range scan may take a while. Please be patient and wait.")
 
   found_addrs = scanner.scan_address(SCAN_START_ADDR, SCAN_END_ADDR)
   if not found_addrs:
